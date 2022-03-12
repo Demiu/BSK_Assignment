@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace lib;
+namespace Lib;
 
 public class Server : IDisposable
 {

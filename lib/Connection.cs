@@ -1,4 +1,6 @@
 using System.Net.Sockets;
+using Lib.Defines;
+using Lib.Messages;
 
 namespace Lib;
 
@@ -17,12 +19,28 @@ public class Connection {
             byte msgKind = 0; 
             var receivedCount = await client.Client.ReceiveAsync(new[]{msgKind}, SocketFlags.None, token);
             if (receivedCount > 0) {
-                // todo retrieve packet, handle packet
+                var message = ReceiveMessage(msgKind);
+                HandleMessage((dynamic) await message);
             }
         }
     }
 
-    protected async Task ReceivePacket(byte kind) {
-        // retrieve packet, handle packet
+    protected async Task<Message> ReceiveMessage(byte bkind) {
+        var kind = MessageKindMethods.FromByte(bkind);
+        return kind switch
+        {
+            MessageKind.Ping => await Ping.Deserialize(client.GetStream()),
+            MessageKind.Pong => await Pong.Deserialize(client.GetStream()),
+            null => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
+        };
+    }
+
+    protected async Task HandleMessage(Message msg) {
+        // TODO print an error about unhandled type
+        return;
+    }
+
+    protected async Task HandleMessage(Ping msg) {
+        return;
     }
 }

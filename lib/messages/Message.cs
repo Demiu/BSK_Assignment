@@ -20,5 +20,5 @@ public abstract class Message {
         SerializeIntoInner(writer);
     }
 
-    public abstract void SerializeIntoInner(BinaryWriter writer);
+    protected abstract void SerializeIntoInner(BinaryWriter writer);
 }

@@ -1,6 +1,6 @@
 namespace Lib.Defines;
 
-enum MessageKind: byte {
+public enum MessageKind: byte {
     Ping = 0,
     Pong = 1,
 }

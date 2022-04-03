@@ -4,6 +4,8 @@ using Lib.Defines;
 namespace Lib.Messages;
 
 public abstract class Message {
+    public abstract MessageKind Kind{get;}
+
     public byte[] Serialize() {
         using (MemoryStream m = new MemoryStream()) {
             using (BinaryWriter w = new BinaryWriter(m)) {
@@ -13,5 +15,10 @@ public abstract class Message {
         }
     }
 
-    public abstract void SerializeInto(BinaryWriter writer);
+    public void SerializeInto(BinaryWriter writer) {
+        writer.Write((byte)Kind);
+        SerializeIntoInner(writer);
+    }
+
+    public abstract void SerializeIntoInner(BinaryWriter writer);
 }

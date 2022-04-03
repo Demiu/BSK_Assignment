@@ -4,25 +4,29 @@ using Lib.Defines;
 namespace Lib.Messages;
 
 public class Ping : Message {
+    public override MessageKind Kind => MessageKind.Ping;
+
     public static Task<Message> Deserialize(NetworkStream stream)
     {
         return Task.FromResult<Message>(new Ping());
     }
 
-    public override void SerializeInto(BinaryWriter writer)
+    public override void SerializeIntoInner(BinaryWriter writer)
     {
-        writer.Write((byte)MessageKind.Ping);
+        // empty message
     }
 }
 
 public class Pong : Message {
+    public override MessageKind Kind => MessageKind.Pong;
+
     public static Task<Message> Deserialize(NetworkStream stream)
     {
         return Task.FromResult<Message>(new Pong());
     }
 
-    public override void SerializeInto(BinaryWriter writer)
+    public override void SerializeIntoInner(BinaryWriter writer)
     {
-        writer.Write((byte)MessageKind.Pong);
+        // empty message
     }
 }

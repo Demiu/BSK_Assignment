@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Lib.Messages;
 
 namespace Lib;
 
@@ -26,6 +25,7 @@ public class Server : IDisposable
     }
 
     public async Task ListenLoop() {
+        Console.WriteLine("Server::ListenLoop start");
         try {
             var token = cancelTokenSource.Token;
             listener.Start();

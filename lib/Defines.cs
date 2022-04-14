@@ -1,5 +1,9 @@
 namespace Lib.Defines;
 
+public class Constants {
+    public const UInt16 DEFAULT_PORT = 32004;
+}
+
 public enum MessageKind: byte {
     Ping = 0,
     Pong = 1,

@@ -14,7 +14,7 @@ public class Connection {
         this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     }
 
-    public async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
+    public static async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
         var client = new TcpClient();
         await client.ConnectAsync(destination);
         if (client.Connected) {

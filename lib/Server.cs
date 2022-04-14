@@ -38,7 +38,15 @@ public class Server : IDisposable
         }
     }
 
+    public void PingAll() {
+        Console.WriteLine($"Pinging all {connections.Count} connections");
+        foreach (var c in connections) {
+            c.SendPing();
+        }
+    }
+
     private void HandleNewClient(TcpClient client) {
+        Console.WriteLine($"New client connected");
         var connection = new Connection(client, cancelTokenSource.Token);
         connections.Add(connection);
         Task.Run(() => connection.CommunicationLoop().ContinueWith(_ => connections.Remove(connection))); // TODO handleconnectionclosed?

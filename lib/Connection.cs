@@ -26,14 +26,19 @@ public class Connection {
 
     public async Task CommunicationLoop() {
         var token = cancelTokenSource.Token;
+        var msgKind = new byte[1];
         while (!token.IsCancellationRequested) {
-            byte msgKind = 0; 
-            var receivedCount = await client.Client.ReceiveAsync(new[]{msgKind}, SocketFlags.None, token);
+            var receivedCount = await client.Client.ReceiveAsync(msgKind, SocketFlags.None, token);
             if (receivedCount > 0) {
-                var message = ReceiveMessage(msgKind);
+                var message = ReceiveMessage(msgKind[0]);
                 HandleMessage((dynamic) await message);
             }
         }
+    }
+
+    public void SendPing() {
+        var token = cancelTokenSource.Token;
+        Task.Run(() => client.Client.SendAsync(new Ping().Serialize(), SocketFlags.None, token));
     }
 
     protected async Task<Message> ReceiveMessage(byte bkind) {
@@ -47,12 +52,16 @@ public class Connection {
     }
 
     protected void HandleMessage(Message msg) {
-        // TODO print an error about unhandled type
-        return;
+        Console.Error.WriteLine($"Unhandled message of kind {msg.Kind}");
     }
 
     protected void HandleMessage(Ping msg) {
+        Console.WriteLine("Received Ping, sending Pong");
         var token = cancelTokenSource.Token;
         Task.Run(() => client.Client.SendAsync(new Pong().Serialize(), SocketFlags.None, token));
+    }
+
+    protected void HandleMessage(Pong msg) {
+        Console.WriteLine("Received Pong");
     }
 }

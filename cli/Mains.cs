@@ -5,8 +5,11 @@ namespace Cli;
 internal class Mains {
     internal static void ServerMain(string[] args) {
         var server = new Lib.Server(new IPEndPoint(IPAddress.Parse("127.0.0.1"), Lib.Defines.Constants.DEFAULT_PORT));
-        server.ListenLoop().Wait();
-        //Console.ReadKey();
+        server.ListenLoop();
+        while(true) {
+            Console.ReadKey();
+            server.PingAll();
+        }
     }
 
     internal static void ClientMain(string[] args) {

@@ -41,7 +41,6 @@ public class Server : IDisposable
     private void HandleNewClient(TcpClient client) {
         var connection = new Connection(client, cancelTokenSource.Token);
         connections.Add(connection);
-        // TODO do coroutines
-        _ = connection.CommunicationLoop().ContinueWith(_ => connections.Remove(connection)); // TODO handleconnectionclosed?
+        Task.Run(() => connection.CommunicationLoop().ContinueWith(_ => connections.Remove(connection))); // TODO handleconnectionclosed?
     }
 }

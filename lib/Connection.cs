@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using Lib.Defines;
 using Lib.Messages;
@@ -11,6 +12,16 @@ public class Connection {
     public Connection(TcpClient client, CancellationToken cancellationToken) {
         this.client = client;
         this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    }
+
+    public async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
+        var client = new TcpClient();
+        await client.ConnectAsync(destination);
+        if (client.Connected) {
+            return new Connection(client, cancellationToken);
+        } else {
+            return null;
+        }
     }
 
     public async Task CommunicationLoop() {
@@ -31,16 +42,17 @@ public class Connection {
         {
             MessageKind.Ping => await Ping.Deserialize(client.GetStream()),
             MessageKind.Pong => await Pong.Deserialize(client.GetStream()),
-            null => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
+            _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
 
-    protected async Task HandleMessage(Message msg) {
+    protected void HandleMessage(Message msg) {
         // TODO print an error about unhandled type
         return;
     }
 
-    protected async Task HandleMessage(Ping msg) {
-        return;
+    protected void HandleMessage(Ping msg) {
+        var token = cancelTokenSource.Token;
+        Task.Run(() => client.Client.SendAsync(new Pong().Serialize(), SocketFlags.None, token));
     }
 }

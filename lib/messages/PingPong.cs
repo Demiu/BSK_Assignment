@@ -6,7 +6,7 @@ namespace Lib.Messages;
 public class Ping : Message {
     public override MessageKind Kind => MessageKind.Ping;
 
-    public static Task<Message> Deserialize(NetworkStream stream)
+    public static Task<Message> Deserialize(Socket socket)
     {
         return Task.FromResult<Message>(new Ping());
     }
@@ -20,7 +20,7 @@ public class Ping : Message {
 public class Pong : Message {
     public override MessageKind Kind => MessageKind.Pong;
 
-    public static Task<Message> Deserialize(NetworkStream stream)
+    public static Task<Message> Deserialize(Socket socket)
     {
         return Task.FromResult<Message>(new Pong());
     }

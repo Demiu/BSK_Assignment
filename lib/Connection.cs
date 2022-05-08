@@ -8,10 +8,12 @@ namespace Lib;
 public class Connection {
     TcpClient client;
     CancellationTokenSource cancelTokenSource;
+    Crypto.SecurityAgent securityAgent;
 
     public Connection(TcpClient client, CancellationToken cancellationToken) {
         this.client = client;
         this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        this.securityAgent = new();
     }
 
     public static async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
@@ -41,12 +43,23 @@ public class Connection {
         Task.Run(() => client.Client.SendAsync(new Ping().Serialize(), SocketFlags.None, token));
     }
 
+    public void AttemptSecuringConnection() {
+        var token = cancelTokenSource.Token;
+        Task.Run(async () => {
+            if (await securityAgent.StartSecuring(token)) {
+                var pub = await securityAgent.GetPubKey(token);
+                await client.Client.SendAsync(new SecureRequest(pub).Serialize(), SocketFlags.None, token);
+            }
+        });
+    }
+
     protected async Task<Message> ReceiveMessage(byte bkind) {
         var kind = MessageKindMethods.FromByte(bkind);
         return kind switch
         {
-            MessageKind.Ping => await Ping.Deserialize(client.GetStream()),
-            MessageKind.Pong => await Pong.Deserialize(client.GetStream()),
+            MessageKind.Ping => await Ping.Deserialize(client.Client),
+            MessageKind.Pong => await Pong.Deserialize(client.Client),
+            MessageKind.SecureRequest => await SecureRequest.Deserialize(client.Client),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }

@@ -2,11 +2,13 @@ namespace Lib.Defines;
 
 public class Constants {
     public const UInt16 DEFAULT_PORT = 32004;
+    public const Int32 RSA_KEY_SIZE = 1024;
 }
 
 public enum MessageKind: byte {
     Ping = 0,
     Pong = 1,
+    SecureRequest = 2,
 }
 
 static class MessageKindMethods {

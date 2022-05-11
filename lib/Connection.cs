@@ -77,4 +77,8 @@ public class Connection {
     protected void HandleMessage(Pong msg) {
         Console.WriteLine("Received Pong");
     }
+
+    protected void HandleMessage(SecureRequest msg) {
+        Console.WriteLine("Received SecureRequest");
+    }
 }

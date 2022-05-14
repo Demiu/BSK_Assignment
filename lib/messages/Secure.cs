@@ -6,7 +6,7 @@ namespace Lib.Messages;
 
 public class SecureRequest : Message
 {
-    byte[] publicKey;
+    public byte[] publicKey;
 
     public override MessageKind Kind => Defines.MessageKind.SecureRequest;
 
@@ -14,7 +14,7 @@ public class SecureRequest : Message
         this.publicKey = publicKey;
     }
 
-    public static async Task<Message> Deserialize(NetworkStream stream)
+    public static async Task<Message> Deserialize(Stream stream)
     {
         // TODO add token param
         var src = new CancellationTokenSource();

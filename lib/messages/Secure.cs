@@ -14,14 +14,16 @@ public class SecureRequest : Message
         this.publicKey = publicKey;
     }
 
-    public static async Task<Message> Deserialize(Socket socket)
+    public static async Task<Message> Deserialize(NetworkStream stream)
     {
-        byte[] lenArray = new byte[4];
-        Int32 len = IPAddress.NetworkToHostOrder(
-            await socket.ReceiveAsync(lenArray, SocketFlags.None));
+        // TODO add token param
+        var src = new CancellationTokenSource();
+        var token = src.Token;
 
-        byte[] publicKey = new byte[len];
-        await socket.ReceiveAsync(publicKey, SocketFlags.None);
+        var lenArray = await stream.ReadExactlyAsync(4, token);
+        Int32 len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lenArray));
+
+        var publicKey = await stream.ReadExactlyAsync(len, token);
 
         return new SecureRequest(publicKey);
     }

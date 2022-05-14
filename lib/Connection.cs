@@ -28,13 +28,10 @@ public class Connection {
 
     public async Task CommunicationLoop() {
         var token = cancelTokenSource.Token;
-        var msgKind = new byte[1];
         while (!token.IsCancellationRequested) {
-            var receivedCount = await client.Client.ReceiveAsync(msgKind, SocketFlags.None, token);
-            if (receivedCount > 0) {
-                var message = ReceiveMessage(msgKind[0]);
-                HandleMessage((dynamic) await message);
-            }
+            var msgKind = await client.GetStream().ReadExactlyAsync(1, token);
+            var message = ReceiveMessage(msgKind[0]);
+            HandleMessage((dynamic) await message);
         }
     }
 
@@ -55,11 +52,12 @@ public class Connection {
 
     protected async Task<Message> ReceiveMessage(byte bkind) {
         var kind = MessageKindMethods.FromByte(bkind);
+        var stream = client.GetStream();
         return kind switch
         {
-            MessageKind.Ping => await Ping.Deserialize(client.Client),
-            MessageKind.Pong => await Pong.Deserialize(client.Client),
-            MessageKind.SecureRequest => await SecureRequest.Deserialize(client.Client),
+            MessageKind.Ping => await Ping.Deserialize(stream),
+            MessageKind.Pong => await Pong.Deserialize(stream),
+            MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -72,7 +70,7 @@ public class Connection {
         Console.WriteLine("Received Ping, sending Pong");
         var token = cancelTokenSource.Token;
         Task.Run(() => client.Client.SendAsync(new Pong().Serialize(), SocketFlags.None, token));
-    }
+    }   
 
     protected void HandleMessage(Pong msg) {
         Console.WriteLine("Received Pong");

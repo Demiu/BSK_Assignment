@@ -5,7 +5,9 @@ namespace Cli.Modes;
 class ServerMode : Mode
 {
     protected override string prompt => "server>";
-    protected override string helpText => throw new NotImplementedException(); // TODO
+    protected override string helpText => 
+        "\tping - query sending a ping\n" +
+        baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
     private Lib.Server server;
@@ -15,7 +17,7 @@ class ServerMode : Mode
         this.server = server;
         functionsVal = new() {
             {"ping", (_) => this.SendPing()},
-            //{"secure", (_) => this.SecureConnection()}
+            //{"secure", (_) => this.SecureConnection()} // TODO
         };
     }
 

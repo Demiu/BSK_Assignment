@@ -5,7 +5,10 @@ namespace Cli.Modes;
 class ClientMode : Mode
 {
     protected override string prompt => "client>";
-    protected override string helpText => throw new NotImplementedException(); // TODO
+    protected override string helpText => 
+        "\tping - query sending a ping\n" +
+        "\tsecure - attempts to secure a connection\n" +
+        baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
     private Connection connection;

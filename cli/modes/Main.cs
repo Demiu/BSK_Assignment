@@ -5,7 +5,12 @@ namespace Cli.Modes;
 class MainMode : Mode
 {
     protected override string prompt => ">";
-    protected override string helpText => throw new NotImplementedException();
+    protected override string helpText => 
+        "\tip <address> - sets the address\n" +
+        "\tport <port> - sets the port\n" +
+        "\thost - starts the server\n" +
+        "\tjoin - starts the cliant\n" +
+        baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
     private IPAddress address;
@@ -18,6 +23,7 @@ class MainMode : Mode
         functionsVal = new() {
             {"host", (_) => StartServer()},
             {"join", (_) => StartClient()},
+            {"ip", (o) => SetIp(o)},
         };
     }
 
@@ -26,12 +32,26 @@ class MainMode : Mode
             Console.WriteLine("Invalid number of arguments!");
         }
         
-        var ok = IPAddress.TryParse(opts[0], out IPAddress? newAddr);
+        var ok = IPAddress.TryParse(opts[0], out var newAddr);
         if (ok && newAddr != null) {
             address = newAddr;
             Console.WriteLine($"New IP is: {address}");
         } else {
-            Console.WriteLine($"Couldn't parse and IP from {opts[0]}");
+            Console.WriteLine($"Couldn't parse an IP from {opts[0]}");
+        }
+    }
+
+    private void SetPort(ArraySegment<string> opts) {
+        if (opts.Count != 1) {
+            Console.WriteLine("Invalid number of arguments!");
+        }
+
+        var ok = UInt16.TryParse(opts[0], out var newPort);
+        if (ok) {
+            port = newPort;
+            Console.WriteLine($"New port is: {port}");
+        } else {
+            Console.WriteLine($"Couldn't parse a port from {opts[0]}");
         }
     }
 

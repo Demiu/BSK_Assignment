@@ -5,6 +5,10 @@ abstract class Mode {
     protected abstract string helpText{get;}
     protected abstract Dictionary<string, Action<ArraySegment<string>>> functions{get;}
 
+    protected string baseHelpText = 
+        "\thelp - shows this help\n" +
+        "\texit - leaves the mode";
+
     public void Run() {
         while(true) {
             Console.Write(prompt);
@@ -27,7 +31,7 @@ abstract class Mode {
                     var len = cmd.Length - 1;
                     functions[funcName](new ArraySegment<string>(cmd, 1, len));
                 } else {
-                    Console.WriteLine($"There is no function with name \"{funcName}\"");
+                    Console.WriteLine($"There is no function with name \"{funcName}\", try help");
                 }
                 break;
             }

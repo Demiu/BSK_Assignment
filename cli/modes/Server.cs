@@ -7,6 +7,7 @@ class ServerMode : Mode
     protected override string prompt => "server>";
     protected override string helpText => 
         "\tping - query sending a ping\n" +
+        "\tpeers - list all connections\n" +
         baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
@@ -18,6 +19,7 @@ class ServerMode : Mode
         functionsVal = new() {
             {"ping", (_) => this.SendPing()},
             //{"secure", (_) => this.SecureConnection()} // TODO
+            {"peers", (_) => this.PrintPeers()},
         };
     }
 
@@ -28,4 +30,8 @@ class ServerMode : Mode
     /*private void SecureConnection() {
         server.
     }*/
+
+    private void PrintPeers() {
+        // TODO
+    }
 }

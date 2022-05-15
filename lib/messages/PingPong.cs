@@ -3,7 +3,8 @@ using Lib.Defines;
 
 namespace Lib.Messages;
 
-public class Ping : Message {
+public class Ping : Message 
+{
     public override MessageKind Kind => MessageKind.Ping;
 
     public static Task<Message> Deserialize(Stream stream)
@@ -17,7 +18,8 @@ public class Ping : Message {
     }
 }
 
-public class Pong : Message {
+public class Pong : Message 
+{
     public override MessageKind Kind => MessageKind.Pong;
 
     public static Task<Message> Deserialize(Stream stream)

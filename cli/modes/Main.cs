@@ -60,7 +60,7 @@ class MainMode : Mode
 
         Console.WriteLine("Starting server...");
         var server = new Lib.Server(endpoint);
-        var _ = server.ListenLoop();
+        Lib.Util.TaskRunSafe(() => server.ListenLoop());
 
         var serverMode = new ServerMode(server);
         serverMode.Run();
@@ -76,7 +76,7 @@ class MainMode : Mode
             Console.WriteLine("Failed to connect to server");
             return;
         }
-        var _ = connection.CommunicationLoop();
+        Lib.Util.TaskRunSafe(() => connection.CommunicationLoop());
 
         var clientMode = new ClientMode(connection);
         clientMode.Run();

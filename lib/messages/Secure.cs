@@ -35,3 +35,36 @@ public class SecureRequest : Message
         writer.Write(publicKey);
     }
 }
+
+public class SecureAccept : Message
+{
+    byte[] encryptedKey;
+    byte[] encryptedIv;
+
+    public override MessageKind Kind => Defines.MessageKind.SecureAccept;
+
+    public SecureAccept(byte[] encryptedKey, byte[] encryptedIv) {
+        this.encryptedKey = encryptedKey;
+        this.encryptedIv = encryptedIv;
+    }
+
+    protected override void SerializeIntoInner(BinaryWriter writer)
+    {
+        Int32 keyLen = encryptedKey.Length;
+        writer.Write(IPAddress.HostToNetworkOrder(keyLen));
+        writer.Write(encryptedKey);
+        Int32 ivLen = encryptedIv.Length;
+        writer.Write(IPAddress.HostToNetworkOrder(ivLen));
+        writer.Write(encryptedIv);
+    }
+}
+
+public class SecureReject : Message
+{
+    public override MessageKind Kind => Defines.MessageKind.SecureReject;
+
+    protected override void SerializeIntoInner(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
+}

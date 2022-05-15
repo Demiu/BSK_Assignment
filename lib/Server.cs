@@ -49,6 +49,6 @@ public class Server : IDisposable
         Console.WriteLine($"New client connected");
         var connection = new Connection(client, cancelTokenSource.Token);
         connections.Add(connection);
-        Task.Run(() => connection.CommunicationLoop().ContinueWith(_ => connections.Remove(connection))); // TODO handleconnectionclosed?
+        Util.TaskRunSafe(() => connection.CommunicationLoop()); // TODO handleconnectionclosed, remove connection on completion
     }
 }

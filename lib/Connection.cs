@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Lib.Defines;
@@ -37,15 +38,15 @@ public class Connection {
 
     public void SendPing() {
         var token = cancelTokenSource.Token;
-        Task.Run(() => client.Client.SendAsync(new Ping().Serialize(), SocketFlags.None, token));
+        Util.TaskRunSafe(() => SendMessage(new Ping()));
     }
 
     public void AttemptSecuringConnection() {
         var token = cancelTokenSource.Token;
-        Task.Run(async () => {
+        Util.TaskRunSafe(async () => {
             if (await securityAgent.StartSecuring(token)) {
                 var pub = await securityAgent.GetPubKey(token);
-                await client.Client.SendAsync(new SecureRequest(pub).Serialize(), SocketFlags.None, token);
+                await SendMessage(new SecureRequest(pub));
             }
         });
     }
@@ -53,6 +54,7 @@ public class Connection {
     protected async Task<Message> ReceiveMessage(byte bkind) {
         var kind = MessageKindMethods.FromByte(bkind);
         var stream = client.GetStream();
+        Console.WriteLine($"Received: {kind}");
         return kind switch
         {
             MessageKind.Ping => await Ping.Deserialize(stream),
@@ -62,14 +64,21 @@ public class Connection {
         };
     }
 
+    protected async Task SendMessage(Message msg) {
+        var token = cancelTokenSource.Token;
+        var serialized = msg.Serialize();
+        var sent = await client.Client.SendAsync(serialized, SocketFlags.None, token);
+        Debug.Assert(sent == serialized.Length);
+    }
+
     protected void HandleMessage(Message msg) {
-        Console.Error.WriteLine($"Unhandled message of kind {msg.Kind}");
+        Console.WriteLine($"Unhandled message of kind {msg.Kind}");
     }
 
     protected void HandleMessage(Ping msg) {
         Console.WriteLine("Received Ping, sending Pong");
         var token = cancelTokenSource.Token;
-        Task.Run(() => client.Client.SendAsync(new Pong().Serialize(), SocketFlags.None, token));
+        Util.TaskRunSafe(() => SendMessage(new Pong()));
     }   
 
     protected void HandleMessage(Pong msg) {
@@ -78,5 +87,17 @@ public class Connection {
 
     protected void HandleMessage(SecureRequest msg) {
         Console.WriteLine("Received SecureRequest");
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(async () => {
+            var keyIvTuple = await securityAgent.AcceptSecuring(msg.publicKey, token);
+            if (keyIvTuple == null) {
+                await Console.Out.WriteLineAsync("Rejected");
+                await SendMessage(new SecureReject());
+                return;
+            }
+            await Console.Out.WriteLineAsync("Accepted");
+            var (keyEnc, ivEnc) = keyIvTuple.Value;
+            await SendMessage(new SecureAccept(keyEnc, ivEnc));
+        });
     }
 }

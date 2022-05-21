@@ -43,9 +43,10 @@ public class Connection {
 
     public void AttemptSecuringConnection() {
         var token = cancelTokenSource.Token;
+        // TODO early return securityAgent.CanStartSecuring()
         Util.TaskRunSafe(async () => {
-            if (await securityAgent.StartSecuring(token)) {
-                var pub = await securityAgent.GetPubKey(token);
+            if (securityAgent.CanStartSecuring() && await securityAgent.StartSecuring(token)) {
+                var pub = securityAgent.GetPubRsaKey();
                 await SendMessage(new SecureRequest(pub));
             }
         });
@@ -89,15 +90,19 @@ public class Connection {
         Console.WriteLine("Received SecureRequest");
         var token = cancelTokenSource.Token;
         Util.TaskRunSafe(async () => {
-            var keyIvTuple = await securityAgent.AcceptSecuring(msg.publicKey, token);
-            if (keyIvTuple == null) {
-                await Console.Out.WriteLineAsync("Rejected");
-                await SendMessage(new SecureReject());
+            if (securityAgent.CanAcceptSecuring()) {
+                await Console.Out.WriteLineAsync("Rejected: Can't start securing");
+                return;
+            }
+            if (!await securityAgent.AcceptSecuring(msg.publicKey, token)) {
+                await Task.WhenAll(
+                    Console.Out.WriteLineAsync("Rejected: null return from AcceptSecuring"),
+                    SendMessage(new SecureReject())
+                );
                 return;
             }
             await Console.Out.WriteLineAsync("Accepted");
-            var (keyEnc, ivEnc) = keyIvTuple.Value;
-            await SendMessage(new SecureAccept(keyEnc, ivEnc));
+            await SendMessage(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()));
         });
     }
 }

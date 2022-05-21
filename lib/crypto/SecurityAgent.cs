@@ -5,39 +5,50 @@ using System.Threading;
 namespace Lib.Crypto;
 
 public class SecurityAgent {
-    enum State {
+    public enum State {
         Insecure,
         SelfInitialized,
         BothInitialized,
         Secured,
     }
-    State state; // Access via mutex
+
+    State state; // Write via mutex
     RSA? rsa; // Access via mutex
-    Aes? aes; // Access via mutex
+    byte[]? aesKey; // Write via mutex
     SemaphoreSlim mutex;
 
     public SecurityAgent() {
         state = State.Insecure;
         mutex = new SemaphoreSlim(1);
         rsa = null;
-        aes = null;
+        aesKey = null;
     }
+
+    public bool CanStartSecuring() => state == State.Insecure;
+    public bool CanAcceptSecuring() => state == State.Insecure;
 
     public async Task<bool> StartSecuring(CancellationToken cancellationToken) {
-        return await RunLocked(() => InitSelf(), cancellationToken);
+        return await RunLocked(() => InitSelfRsa(), cancellationToken);
     }
 
-    public async Task<byte[]> GetPubKey(CancellationToken cancellationToken) {
-        // Will throw NullReferenceException if InitSelf wasn't called
-        return await RunLocked(() => rsa?.ExportRSAPublicKey(), cancellationToken);
-    }
-
-    public async Task<(byte[], byte[])?> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
+    public async Task<bool> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
         return await RunLocked(() => InitAesWithRsaPubKey(otherPubKey), cancellationToken);
     }
 
-    protected bool InitSelf() {
-        if (state == State.Insecure) {
+    // Requires SelfInitialized state
+    public byte[] GetPubRsaKey() {
+        // Will throw NullReferenceException if InitSelfRsa wasn't called
+        return rsa.ExportRSAPublicKey();
+    }
+
+    // Requires Secured state
+    public byte[] GetAesKey() {
+        return aesKey;
+    }
+
+    // Requires lock
+    protected bool InitSelfRsa() {
+        if (CanStartSecuring()) {
             rsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
             state = State.SelfInitialized;
             return true;
@@ -45,22 +56,22 @@ public class SecurityAgent {
         return false;
     }
 
-    // Returns (aes.key, aes.iv), both encrypted with the public key
-    protected (byte[], byte[])? InitAesWithRsaPubKey(byte[] otherPubKey) {
-        if (state != State.Insecure) {
-            return null;
+    // Requires lock
+    protected bool InitAesWithRsaPubKey(byte[] otherPubKey) {
+        if (!CanAcceptSecuring()) {
+            return false;
         }
 
         var otherRsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
         otherRsa.ImportRSAPublicKey(otherPubKey, out var len);
         Debug.Assert(len == otherPubKey.Length);
         
-        aes = Aes.Create();
-        var encKey = otherRsa.Encrypt(aes.Key, Defines.Constants.RSA_PADDING_TYPE);
-        var encIv = otherRsa.Encrypt(aes.IV, Defines.Constants.RSA_PADDING_TYPE);
+        using (var aes = Aes.Create()) {
+            aesKey = aes.Key;
+        }
 
         state = State.Secured;
-        return (encKey, encIv);
+        return true;
     }
 
     protected async Task<T> RunLocked<T>(Func<T> toRun, CancellationToken cancellationToken) {

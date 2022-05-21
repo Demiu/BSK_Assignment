@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using Lib.Defines;
 
 namespace Lib.Messages;
@@ -39,13 +41,14 @@ public class SecureRequest : Message
 public class SecureAccept : Message
 {
     byte[] encryptedKey;
-    byte[] encryptedIv;
 
     public override MessageKind Kind => Defines.MessageKind.SecureAccept;
 
-    public SecureAccept(byte[] encryptedKey, byte[] encryptedIv) {
-        this.encryptedKey = encryptedKey;
-        this.encryptedIv = encryptedIv;
+    public SecureAccept(byte[] pubRsaKey, byte[] aesKey) {
+        using var rsa = RSA.Create();
+        rsa.ImportRSAPublicKey(pubRsaKey, out var len);
+        Debug.Assert(len == pubRsaKey.Length);
+        encryptedKey = rsa.Encrypt(aesKey, Defines.Constants.RSA_PADDING_TYPE);
     }
 
     protected override void SerializeIntoInner(BinaryWriter writer)
@@ -53,9 +56,6 @@ public class SecureAccept : Message
         Int32 keyLen = encryptedKey.Length;
         writer.Write(IPAddress.HostToNetworkOrder(keyLen));
         writer.Write(encryptedKey);
-        Int32 ivLen = encryptedIv.Length;
-        writer.Write(IPAddress.HostToNetworkOrder(ivLen));
-        writer.Write(encryptedIv);
     }
 }
 

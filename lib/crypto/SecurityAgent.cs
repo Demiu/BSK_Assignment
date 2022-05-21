@@ -25,12 +25,18 @@ public class SecurityAgent {
     }
 
     public bool CanStartSecuring() => state == State.Insecure;
+    public bool CanFinishSecuring() => state == State.SelfInitialized;
     public bool CanAcceptSecuring() => state == State.Insecure;
 
+    // To be used on requestor side
     public async Task<bool> StartSecuring(CancellationToken cancellationToken) {
         return await RunLocked(() => InitSelfRsa(), cancellationToken);
     }
+    public async Task<bool> FinishSecuring(byte[] encryptedAesKey, CancellationToken cancellationToken) {
+        return await RunLocked(() => InitAesRsaEncrypted(encryptedAesKey), cancellationToken);    
+    }
 
+    // To be used on requestee side
     public async Task<bool> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
         return await RunLocked(() => InitAesWithRsaPubKey(otherPubKey), cancellationToken);
     }
@@ -51,6 +57,16 @@ public class SecurityAgent {
         if (CanStartSecuring()) {
             rsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
             state = State.SelfInitialized;
+            return true;
+        }
+        return false;
+    }
+
+    // Requires lock
+    protected bool InitAesRsaEncrypted(byte[] encryptedAes) {
+        if (CanFinishSecuring()) {
+            aesKey = rsa.Decrypt(encryptedAes, Defines.Constants.RSA_PADDING_TYPE);
+            state = State.Secured;
             return true;
         }
         return false;

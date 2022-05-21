@@ -40,7 +40,7 @@ public class SecureRequest : Message
 
 public class SecureAccept : Message
 {
-    byte[] encryptedKey;
+    public byte[] encryptedKey;
 
     public override MessageKind Kind => Defines.MessageKind.SecureAccept;
 
@@ -49,6 +49,24 @@ public class SecureAccept : Message
         rsa.ImportRSAPublicKey(pubRsaKey, out var len);
         Debug.Assert(len == pubRsaKey.Length);
         encryptedKey = rsa.Encrypt(aesKey, Defines.Constants.RSA_PADDING_TYPE);
+    }
+
+    protected SecureAccept(byte[] encryptedKey) {
+        this.encryptedKey = encryptedKey;
+    }
+
+    public static async Task<Message> Deserialize(Stream stream)
+    {
+        // TODO add token param
+        var src = new CancellationTokenSource();
+        var token = src.Token;
+
+        var lenArray = await stream.ReadExactlyAsync(4, token);
+        Int32 len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lenArray));
+
+        var encryptedKey = await stream.ReadExactlyAsync(len, token);
+
+        return new SecureAccept(encryptedKey);
     }
 
     protected override void SerializeIntoInner(BinaryWriter writer)

@@ -32,7 +32,7 @@ public class Connection {
         while (!token.IsCancellationRequested) {
             var msgKind = await client.GetStream().ReadExactlyAsync(1, token);
             var message = ReceiveMessage(msgKind[0]);
-            HandleMessage((dynamic) await message);
+            HandleMessage((dynamic) await message); // TODO replace dynamic dispatch with single
         }
     }
 
@@ -55,12 +55,13 @@ public class Connection {
     protected async Task<Message> ReceiveMessage(byte bkind) {
         var kind = MessageKindMethods.FromByte(bkind);
         var stream = client.GetStream();
-        Console.WriteLine($"Received: {kind}");
+        //Console.WriteLine($"Received: {kind}"); // TODO add to logging
         return kind switch
         {
             MessageKind.Ping => await Ping.Deserialize(stream),
             MessageKind.Pong => await Pong.Deserialize(stream),
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
+            MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -80,7 +81,7 @@ public class Connection {
         Console.WriteLine("Received Ping, sending Pong");
         var token = cancelTokenSource.Token;
         Util.TaskRunSafe(() => SendMessage(new Pong()));
-    }   
+    }
 
     protected void HandleMessage(Pong msg) {
         Console.WriteLine("Received Pong");
@@ -90,7 +91,7 @@ public class Connection {
         Console.WriteLine("Received SecureRequest");
         var token = cancelTokenSource.Token;
         Util.TaskRunSafe(async () => {
-            if (securityAgent.CanAcceptSecuring()) {
+            if (!securityAgent.CanAcceptSecuring()) {
                 await Console.Out.WriteLineAsync("Rejected: Can't start securing");
                 return;
             }
@@ -101,8 +102,27 @@ public class Connection {
                 );
                 return;
             }
-            await Console.Out.WriteLineAsync("Accepted");
-            await SendMessage(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()));
+            await Task.WhenAll(
+                Console.Out.WriteLineAsync("Accepted"),
+                SendMessage(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()))
+            );
+        });
+    }
+
+    protected void HandleMessage(SecureAccept msg) {
+        Console.WriteLine("Received SecureAccept");
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(async () => {
+            if (!securityAgent.CanFinishSecuring()) {
+                await Console.Out.WriteLineAsync("Cannot finish securing");
+                return;
+            }
+            var finishOk = await securityAgent.FinishSecuring(msg.encryptedKey, token);
+            Debug.Assert(finishOk);
+            await Console.Out.WriteLineAsync(
+                finishOk 
+                ? "Finished securing" 
+                : "Failed to finish securing: SecurityAgent rejection");
         });
     }
 }

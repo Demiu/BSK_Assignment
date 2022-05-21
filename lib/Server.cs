@@ -45,6 +45,14 @@ public class Server : IDisposable
         }
     }
 
+    public List<byte[]?> GetAllAesKeys() {
+        var ret = new List<byte[]?>(connections.Count);
+        foreach (var c in connections) {
+            ret.Add(c.GetAesKey());
+        }
+        return ret;
+    }
+
     private void HandleNewClient(TcpClient client) {
         Console.WriteLine($"New client connected");
         var connection = new Connection(client, cancelTokenSource.Token);

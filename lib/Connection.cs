@@ -52,6 +52,8 @@ public class Connection {
         });
     }
 
+    public byte[]? GetAesKey() => securityAgent.GetAesKey();
+
     protected async Task<Message> ReceiveMessage(byte bkind) {
         var kind = MessageKindMethods.FromByte(bkind);
         var stream = client.GetStream();

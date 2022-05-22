@@ -27,7 +27,7 @@ public class MessageTest {
             Assert.NotNull(messagePost);
         }
         // Check the contents
-        var contentBytesPost = messagePost.publicKey;
+        var contentBytesPost = messagePost!.publicKey;
         Assert.Equal(contentBytes, contentBytesPost);
         var contentPost = Encoding.UTF8.GetString(messagePost.publicKey);
         Assert.Equal(content, contentPost);

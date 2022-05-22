@@ -69,6 +69,7 @@ public class Connection {
             MessageKind.Pong => await Pong.Deserialize(stream),
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
+            MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }

@@ -63,7 +63,6 @@ public class SecureAccept : Message
 
         var lenArray = await stream.ReadExactlyAsync(4, token);
         Int32 len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lenArray));
-
         var encryptedKey = await stream.ReadExactlyAsync(len, token);
 
         return new SecureAccept(encryptedKey);

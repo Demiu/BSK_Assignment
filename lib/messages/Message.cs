@@ -6,7 +6,7 @@ namespace Lib.Messages;
 public abstract class Message {
     public abstract MessageKind Kind{get;}
 
-    public byte[] Serialize() {
+    public byte[] Serialized() {
         using (MemoryStream m = new MemoryStream()) {
             using (BinaryWriter w = new BinaryWriter(m)) {
                 SerializeInto(w);

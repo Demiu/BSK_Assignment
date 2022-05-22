@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using Lib.Defines;
 
@@ -48,6 +47,7 @@ public class SecureAccept : Message
         using var rsa = RSA.Create();
         rsa.ImportRSAPublicKey(pubRsaKey, out var len);
         Debug.Assert(len == pubRsaKey.Length);
+        
         encryptedKey = rsa.Encrypt(aesKey, Defines.Constants.RSA_PADDING_TYPE);
     }
 

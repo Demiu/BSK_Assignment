@@ -69,10 +69,28 @@ public class Connection {
     }
 
     protected async Task SendMessage(Message msg) {
+        // TODO if secured prefer 
         var token = cancelTokenSource.Token;
-        var serialized = msg.Serialize();
+        var serialized = msg.Serialized();
         var sent = await client.Client.SendAsync(serialized, SocketFlags.None, token);
         Debug.Assert(sent == serialized.Length);
+    }
+
+    protected async Task SendMessageSecured(Message msg) {
+        if (msg is SecuredMessage) {
+            await Task.WhenAll(
+                Console.Out.WriteLineAsync(
+                    "Attmpted to secure send a message that's already a SecuredMessage"),
+                SendMessage(msg)
+            );
+            return;
+        }
+        var wrapped = securityAgent.TrySecureMessage(msg);
+        if (wrapped == null) {
+            await Console.Out.WriteLineAsync("Failed to secure a message");
+            return;
+        }
+        await SendMessage(msg);
     }
 
     protected void HandleMessage(Message msg) {

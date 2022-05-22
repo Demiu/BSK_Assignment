@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
+using Lib.Messages;
 
 namespace Lib.Crypto;
 
@@ -28,6 +29,8 @@ public class SecurityAgent {
     public bool CanFinishSecuring() => state == State.SelfInitialized;
     public bool CanAcceptSecuring() => state == State.Insecure;
 
+    // TODO rework start/finish/accept securing with returning a message maybe?
+
     // To be used on requestor side
     public async Task<bool> StartSecuring(CancellationToken cancellationToken) {
         return await RunLocked(() => InitSelfRsa(), cancellationToken);
@@ -50,6 +53,13 @@ public class SecurityAgent {
     // Requires Secured state
     public byte[] GetAesKey() {
         return aesKey;
+    }
+
+    public SecuredMessage? TrySecureMessage(Message toSecure) {
+        if (state != State.Secured) {
+            return null;
+        }
+        return new SecuredMessage(toSecure, aesKey!);
     }
 
     // Requires lock

@@ -15,7 +15,7 @@ public class MessageTest {
         var contentBytes = Encoding.UTF8.GetBytes(content);
         // Create and serialize the message
         var messagePre = new Lib.Messages.SecureRequest(contentBytes);
-        var serialized = messagePre.Serialize();
+        var serialized = messagePre.Serialized();
         // Deserialize the message
         Lib.Messages.SecureRequest? messagePost;
         using(var stream = new MemoryStream(serialized)) {

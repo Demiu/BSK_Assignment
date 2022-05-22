@@ -41,6 +41,11 @@ public class Connection {
         Util.TaskRunSafe(() => SendMessage(new Ping()));
     }
 
+    public void SendPingSecured() {
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(() => SendMessageSecured(new Ping()));
+    }
+
     public void AttemptSecuringConnection() {
         var token = cancelTokenSource.Token;
         // TODO early return securityAgent.CanStartSecuring()
@@ -90,7 +95,7 @@ public class Connection {
             await Console.Out.WriteLineAsync("Failed to secure a message");
             return;
         }
-        await SendMessage(msg);
+        await SendMessage(wrapped);
     }
 
     protected void HandleMessage(Message msg) {

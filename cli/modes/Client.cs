@@ -6,7 +6,8 @@ class ClientMode : Mode
 {
     protected override string prompt => "client>";
     protected override string helpText => 
-        "\tping - query sending a ping\n" +
+        "\tping [sec] - query sending a ping\n" +
+        "\t             sec - encrypt the ping\n" +
         "\tsecure - attempts to secure a connection\n" +
         "\taes - prints the aes key" + 
         baseHelpText;
@@ -18,13 +19,25 @@ class ClientMode : Mode
     public ClientMode(Connection connection) {
         this.connection = connection;
         functionsVal = new() {
-            {"ping", (_) => this.SendPing()},
+            {"ping", (o) => this.SendPing(o)},
             {"secure", (_) => this.SecureConnection()},
             {"aes", (_) => this.PrintAesKey()},
         };
     }
 
-    private void SendPing() {
+    private void SendPing(ArraySegment<string> opts) {
+        if (opts.Count > 1) {
+            Console.WriteLine("Invalid number of arguments!");
+            return;
+        }
+        if (opts.Count == 1) {
+            if (opts[0] == "sec") {
+                connection.SendPingSecured();
+            } else {
+                Console.WriteLine($"Invalid option ${opts[0]}");
+            }
+            return;
+        }
         connection.SendPing();
     }
 

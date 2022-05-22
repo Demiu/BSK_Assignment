@@ -47,7 +47,7 @@ public class SecureAccept : Message
         using var rsa = RSA.Create();
         rsa.ImportRSAPublicKey(pubRsaKey, out var len);
         Debug.Assert(len == pubRsaKey.Length);
-        
+
         encryptedKey = rsa.Encrypt(aesKey, Defines.Constants.RSA_PADDING_TYPE);
     }
 
@@ -83,6 +83,6 @@ public class SecureReject : Message
 
     protected override void SerializeIntoInner(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException(); // TODO
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Cryptography;
 using Lib.Defines;
 
@@ -24,6 +25,12 @@ public class SecuredMessage : Message
 
     protected override void SerializeIntoInner(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        Int32 ivLen = iv.Length;
+        writer.Write(IPAddress.HostToNetworkOrder(ivLen));
+        writer.Write(iv);
+
+        Int32 contentLen = content.Length;
+        writer.Write(IPAddress.HostToNetworkOrder(contentLen));
+        writer.Write(content);
     }
 }

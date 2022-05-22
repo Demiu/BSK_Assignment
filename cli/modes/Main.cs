@@ -24,12 +24,14 @@ class MainMode : Mode
             {"host", (_) => StartServer()},
             {"join", (_) => StartClient()},
             {"ip", (o) => SetIp(o)},
+            // {"port" ...} // TODO
         };
     }
 
     private void SetIp(ArraySegment<string> opts) {
         if (opts.Count != 1) {
             Console.WriteLine("Invalid number of arguments!");
+            return;
         }
         
         var ok = IPAddress.TryParse(opts[0], out var newAddr);

@@ -16,8 +16,9 @@ public class SecuredMessage : Message
         aes.Key = aesKey;
 
         using var memStream = new MemoryStream();
-        using var cryptoStream = new CryptoStream(memStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
-        cryptoStream.Write(nested.Serialized());
+        using (var cryptoStream = new CryptoStream(memStream, aes.CreateEncryptor(), CryptoStreamMode.Write)) {
+            cryptoStream.Write(nested.Serialized());
+        }
 
         this.iv = aes.IV;
         this.content = memStream.ToArray();
@@ -34,25 +35,15 @@ public class SecuredMessage : Message
         var src = new CancellationTokenSource();
         var token = src.Token;
 
-        var ivLenArray = await stream.ReadExactlyAsync(4, token);
-        Int32 ivLen = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ivLenArray));
-        var iv = await stream.ReadExactlyAsync(ivLen, token);
-
-        var contentLenArray = await stream.ReadExactlyAsync(4, token);
-        Int32 contentLen = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(contentLenArray));
-        var content = await stream.ReadExactlyAsync(contentLen, token);
+        var iv = await stream.ReadNetIntPrefixedByteArrayAsync(token);
+        var content = await stream.ReadNetIntPrefixedByteArrayAsync(token);
 
         return new SecuredMessage(iv, content);
     }
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
-        Int32 ivLen = iv.Length;
-        writer.Write(IPAddress.HostToNetworkOrder(ivLen));
-        writer.Write(iv);
-
-        Int32 contentLen = content.Length;
-        writer.Write(IPAddress.HostToNetworkOrder(contentLen));
-        writer.Write(content);
+        stream.WriteNetIntPrefixedByteArray(iv);
+        stream.WriteNetIntPrefixedByteArray(content);
     }
 }

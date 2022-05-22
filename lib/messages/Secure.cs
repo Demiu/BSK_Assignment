@@ -21,19 +21,14 @@ public class SecureRequest : Message
         var src = new CancellationTokenSource();
         var token = src.Token;
 
-        var lenArray = await stream.ReadExactlyAsync(4, token);
-        Int32 len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lenArray));
-
-        var publicKey = await stream.ReadExactlyAsync(len, token);
+        var publicKey = await stream.ReadNetIntPrefixedByteArrayAsync(token);
 
         return new SecureRequest(publicKey);
     }
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
-        Int32 len = publicKey.Length;
-        writer.Write(IPAddress.HostToNetworkOrder(len));
-        writer.Write(publicKey);
+        stream.WriteNetIntPrefixedByteArray(publicKey);
     }
 }
 
@@ -61,18 +56,14 @@ public class SecureAccept : Message
         var src = new CancellationTokenSource();
         var token = src.Token;
 
-        var lenArray = await stream.ReadExactlyAsync(4, token);
-        Int32 len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lenArray));
-        var encryptedKey = await stream.ReadExactlyAsync(len, token);
+        var encryptedKey = await stream.ReadNetIntPrefixedByteArrayAsync(token);
 
         return new SecureAccept(encryptedKey);
     }
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
-        Int32 keyLen = encryptedKey.Length;
-        writer.Write(IPAddress.HostToNetworkOrder(keyLen));
-        writer.Write(encryptedKey);
+        stream.WriteNetIntPrefixedByteArray(encryptedKey);
     }
 }
 
@@ -80,7 +71,7 @@ public class SecureReject : Message
 {
     public override MessageKind Kind => Defines.MessageKind.SecureReject;
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
         throw new NotImplementedException(); // TODO
     }

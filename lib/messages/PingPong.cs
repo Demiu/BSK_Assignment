@@ -12,7 +12,7 @@ public class Ping : Message
         return Task.FromResult<Message>(new Ping());
     }
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
         // empty message
     }
@@ -27,7 +27,7 @@ public class Pong : Message
         return Task.FromResult<Message>(new Pong());
     }
 
-    protected override void SerializeIntoInner(BinaryWriter writer)
+    protected override void SerializeIntoInner(System.IO.Stream stream)
     {
         // empty message
     }

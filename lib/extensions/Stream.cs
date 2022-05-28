@@ -9,6 +9,7 @@ public static class StreamExtension
         while (offset < count) {
             int read = await stream.ReadAsync(buffer, offset, count, token);
             if (read == 0) {
+                //Console.WriteLine("Throwing EOS"); // TODO uncomment when we add proper logging
                 throw new System.IO.EndOfStreamException();
             }
             offset += read;

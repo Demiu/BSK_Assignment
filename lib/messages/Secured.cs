@@ -41,6 +41,19 @@ public class SecuredMessage : Message
         return new SecuredMessage(iv, content);
     }
 
+    public void FeedNestedTo(Action<Stream> to, byte[] aesKey) {
+        using var aes = Aes.Create();
+        aes.Key = aesKey;
+        aes.IV = iv;
+
+        CancellationTokenSource cts = new(); // TODO rem
+
+        using var memStream = new MemoryStream(content);
+        using (var cryptoStream = new CryptoStream(memStream, aes.CreateDecryptor(), CryptoStreamMode.Read)) {
+            to(cryptoStream);
+        }
+    }
+
     protected override void SerializeIntoInner(System.IO.Stream stream)
     {
         stream.WriteNetIntPrefixedByteArray(iv);

@@ -29,10 +29,9 @@ public class Connection {
 
     public async Task CommunicationLoop() {
         var token = cancelTokenSource.Token;
+        var networkStream = client.GetStream();
         while (!token.IsCancellationRequested) {
-            var msgKind = await client.GetStream().ReadExactlyAsync(1, token);
-            var message = ReceiveMessage(msgKind[0]);
-            HandleMessage((dynamic) await message); // TODO replace dynamic dispatch with single
+            await ReceiveMessageFrom(networkStream, token);
         }
     }
 
@@ -59,9 +58,14 @@ public class Connection {
 
     public byte[]? GetAesKey() => securityAgent.GetAesKey();
 
-    protected async Task<Message> ReceiveMessage(byte bkind) {
+    protected async Task ReceiveMessageFrom(Stream stream, CancellationToken token) {
+        var message = DeserializeMessageFrom(stream, token);
+        HandleMessage((dynamic) await message); // TODO replace dynamic dispatch with single
+    }
+
+    protected async Task<Message> DeserializeMessageFrom(Stream stream, CancellationToken token) {
+        var bkind = (await stream.ReadExactlyAsync(1, token))[0];
         var kind = MessageKindMethods.FromByte(bkind);
-        var stream = client.GetStream();
         //Console.WriteLine($"Received: {kind}"); // TODO add to logging
         return kind switch
         {
@@ -150,5 +154,17 @@ public class Connection {
                 ? "Finished securing" 
                 : "Failed to finish securing: SecurityAgent rejection");
         });
+    }
+
+    protected void HandleMessage(SecuredMessage msg) {
+        Console.WriteLine("Received SecuredMessage");
+        var token = cancelTokenSource.Token;
+        var key = securityAgent.GetAesKey();
+        if (key != null) {
+            Action<Stream> syncRecv = (s) => ReceiveMessageFrom(s, token).Wait();
+            msg.FeedNestedTo(syncRecv, key);
+        } else {
+            Console.WriteLine("Received secured message, but no key was established!");
+        }
     }
 }

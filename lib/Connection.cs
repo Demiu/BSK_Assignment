@@ -167,18 +167,24 @@ public class Connection {
         {
             string pathFiles = "./users/" + msg.fileFolderDirectory;
             var directoryContentFiles = Directory.GetFiles(pathFiles);
+            Console.WriteLine(directoryContentFiles.Length);
 
             string pathDirectory = "./users/" + msg.fileFolderDirectory;
             var directoryContentFolders = Directory.GetDirectories(pathDirectory);
+            Console.WriteLine(directoryContentFolders.Length);
 
             for (int i = 0; i < directoryContentFiles.Length; i++)
             {
-                SendMessage(new DirectoryAccept(directoryContentFiles[i] + " File"));
+                Console.WriteLine(i);
+                Console.WriteLine(directoryContentFiles[i]);
+                SendMessage(new DirectoryAccept(directoryContentFiles[i] + " File " + directoryContentFiles[i].Length/1024/1024 + " MB"));
             }
             
             for (int i = 0; i < directoryContentFolders.Length; i++)
             {
-                SendMessage(new DirectoryAccept(directoryContentFolders[i] + " Directory"));
+                DirectoryInfo di = new DirectoryInfo(directoryContentFolders[i]);
+                var size = di.EnumerateFiles("*.*", SearchOption.AllDirectories).Sum(fi => fi.Length);
+                SendMessage(new DirectoryAccept(directoryContentFolders[i] + " Directory " + directoryContentFolders[i].Length/1024/1024 + " MB"));
             }
         });
     }

@@ -9,7 +9,7 @@ public class SecuredMessage : Message
     byte[] iv;
     byte[] content;
 
-    public override MessageKind Kind => Defines.MessageKind.SecuredMessage;
+    public override MessageKind Kind => MessageKind.SecuredMessage;
 
     public SecuredMessage(Message nested, byte[] aesKey) {
         using var aes = Aes.Create();
@@ -45,8 +45,6 @@ public class SecuredMessage : Message
         using var aes = Aes.Create();
         aes.Key = aesKey;
         aes.IV = iv;
-
-        CancellationTokenSource cts = new(); // TODO rem
 
         using var memStream = new MemoryStream(content);
         using (var cryptoStream = new CryptoStream(memStream, aes.CreateDecryptor(), CryptoStreamMode.Read)) {

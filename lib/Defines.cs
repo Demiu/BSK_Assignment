@@ -15,6 +15,7 @@ public enum MessageKind: byte {
     SecureAccept = 3,
     SecureReject = 4,
     SecuredMessage = 5,
+    TransferRequest = 6,
 }
 
 static class MessageKindMethods {

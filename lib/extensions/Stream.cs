@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 
 public static class StreamExtension 
 {
@@ -29,5 +30,13 @@ public static class StreamExtension
         Int32 len = array.Length;
         stream.Write(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(len)));
         stream.Write(array);
+    }
+
+    public static async Task<string> ReadNetStringAsync(this System.IO.Stream stream, CancellationToken token) {
+        return Encoding.UTF8.GetString(await stream.ReadNetIntPrefixedByteArrayAsync(token));
+    }
+
+    public static void WriteNetString(this System.IO.Stream stream, string toWrite) {
+        stream.WriteNetIntPrefixedByteArray(Encoding.UTF8.GetBytes(toWrite));
     }
 }

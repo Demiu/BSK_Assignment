@@ -59,4 +59,5 @@ public class Server : IDisposable
         connections.Add(connection);
         Util.TaskRunSafe(() => connection.CommunicationLoop()); // TODO handleconnectionclosed, remove connection on completion
     }
+
 }

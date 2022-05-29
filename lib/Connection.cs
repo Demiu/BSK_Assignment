@@ -56,6 +56,12 @@ public class Connection {
             }
         });
     }
+    
+    // TODO: file to be given from the console/gui
+    public void AttemptGetFileDirectory() {
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(() => SendMessage(new DirectoryRequest("aaa")));
+    }
 
     public byte[]? GetAesKey() => securityAgent.GetAesKey();
 
@@ -70,6 +76,8 @@ public class Connection {
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
+            MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
+            MessageKind.DirectoryAccept => await DirectoryAccept.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -151,4 +159,34 @@ public class Connection {
                 : "Failed to finish securing: SecurityAgent rejection");
         });
     }
+
+    protected void HandleMessage(DirectoryRequest msg) {
+        Console.WriteLine("Received DirectoryRequest");
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(async () =>
+        {
+            string pathFiles = "./users/" + msg.fileFolderDirectory;
+            var directoryContentFiles = Directory.GetFiles(pathFiles);
+
+            string pathDirectory = "./users/" + msg.fileFolderDirectory;
+            var directoryContentFolders = Directory.GetDirectories(pathDirectory);
+
+            for (int i = 0; i < directoryContentFiles.Length; i++)
+            {
+                SendMessage(new DirectoryAccept(directoryContentFiles[i] + " File"));
+            }
+            
+            for (int i = 0; i < directoryContentFolders.Length; i++)
+            {
+                SendMessage(new DirectoryAccept(directoryContentFolders[i] + " Directory"));
+            }
+        });
+    }
+    
+    protected void HandleMessage(DirectoryAccept msg) {
+        Console.WriteLine("Received DirectoryAccept");
+        var token = cancelTokenSource.Token;
+        Console.WriteLine(msg.fileFolderInfo);
+    }
+    
 }

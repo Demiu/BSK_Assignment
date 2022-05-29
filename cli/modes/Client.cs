@@ -9,7 +9,8 @@ class ClientMode : Mode
         "\tping [sec] - query sending a ping\n" +
         "\t             sec - encrypt the ping\n" +
         "\tsecure - attempts to secure a connection\n" +
-        "\taes - prints the aes key" + 
+        "\taes - prints the aes key\n" + 
+        "\tdir - prints the content of directory" + 
         baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
@@ -22,6 +23,7 @@ class ClientMode : Mode
             {"ping", (o) => this.SendPing(o)},
             {"secure", (_) => this.SecureConnection()},
             {"aes", (_) => this.PrintAesKey()},
+            {"dir", (_) => this.PrintFileDirectory()},
         };
     }
 
@@ -43,6 +45,10 @@ class ClientMode : Mode
 
     private void SecureConnection() {
         connection.AttemptSecuringConnection();
+    }
+    
+    private void PrintFileDirectory() {
+        connection.AttemptGetFileDirectory();
     }
 
     private void PrintAesKey() {

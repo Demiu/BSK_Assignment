@@ -10,6 +10,7 @@ class ClientMode : Mode
         "\t             sec - encrypt the ping\n" +
         "\tsecure - attempts to secure a connection\n" +
         "\taes - prints the aes key" + 
+        "\tget path - request the file on server under path, verbatim" + 
         baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
@@ -22,6 +23,7 @@ class ClientMode : Mode
             {"ping", (o) => this.SendPing(o)},
             {"secure", (_) => this.SecureConnection()},
             {"aes", (_) => this.PrintAesKey()},
+            {"get", (o) => this.FetchFile(o)},
         };
     }
 
@@ -47,5 +49,14 @@ class ClientMode : Mode
 
     private void PrintAesKey() {
         Console.WriteLine(Convert.ToBase64String(connection.GetAesKey()));
+    }
+
+    private void FetchFile(ArraySegment<string> opts) {
+        if (opts.Count == 0) {
+            Console.WriteLine("You need to specify a path");
+            return;
+        }
+        var path = String.Join(" ", opts);
+        connection.RequestFile(path);
     }
 }

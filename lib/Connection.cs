@@ -10,6 +10,7 @@ public class Connection {
     TcpClient client;
     CancellationTokenSource cancelTokenSource;
     Crypto.SecurityAgent securityAgent;
+    //bool canSendFiles; // TODO
 
     public Connection(TcpClient client, CancellationToken cancellationToken) {
         this.client = client;
@@ -56,6 +57,10 @@ public class Connection {
         });
     }
 
+    public void RequestFile(string path) {
+        Util.TaskRunSafe(() => SendMessage(new TransferRequest(path)));
+    }
+
     public byte[]? GetAesKey() => securityAgent.GetAesKey();
 
     protected async Task ReceiveMessageFrom(Stream stream, CancellationToken token) {
@@ -74,6 +79,7 @@ public class Connection {
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
+            MessageKind.TransferRequest => await TransferRequest.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -167,4 +173,8 @@ public class Connection {
             Console.WriteLine("Received secured message, but no key was established!");
         }
     }
+
+    //protected void HandleMessage(TransferRequest msg) {
+
+    //}
 }

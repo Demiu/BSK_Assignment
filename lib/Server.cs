@@ -8,11 +8,13 @@ public class Server : IDisposable
     TcpListener listener;
     List<Connection> connections;
     CancellationTokenSource cancelTokenSource;
+    FileSystemAgent fsAgent;
 
     public Server(IPEndPoint endPoint) {
         listener = new TcpListener(endPoint);
         connections = new();
         cancelTokenSource = new CancellationTokenSource();
+        fsAgent = new();
     }
 
     ~Server() {
@@ -55,7 +57,7 @@ public class Server : IDisposable
 
     private void HandleNewClient(TcpClient client) {
         Console.WriteLine($"New client connected");
-        var connection = new Connection(client, cancelTokenSource.Token);
+        var connection = new Connection(client, fsAgent, cancelTokenSource.Token);
         connections.Add(connection);
         Util.TaskRunSafe(() => connection.CommunicationLoop()); // TODO handleconnectionclosed, remove connection on completion
     }

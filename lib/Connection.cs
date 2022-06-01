@@ -11,19 +11,21 @@ public class Connection {
     TcpClient client;
     CancellationTokenSource cancelTokenSource;
     Crypto.SecurityAgent securityAgent;
+    FileSystemAgent fsAgent;
     //bool canSendFiles; // TODO
 
-    public Connection(TcpClient client, CancellationToken cancellationToken) {
+    public Connection(TcpClient client, FileSystemAgent fsAgent, CancellationToken cancellationToken) {
         this.client = client;
         this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         this.securityAgent = new();
+        this.fsAgent = fsAgent;
     }
 
     public static async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
         var client = new TcpClient();
         await client.ConnectAsync(destination);
         if (client.Connected) {
-            return new Connection(client, cancellationToken);
+            return new Connection(client, new(), cancellationToken);
         } else {
             return null;
         }

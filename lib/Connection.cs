@@ -115,7 +115,6 @@ public class Connection {
 
     protected void HandleMessage(Ping msg) {
         Console.WriteLine("Received Ping, sending Pong");
-        var token = cancelTokenSource.Token;
         Util.TaskRunSafe(() => SendMessage(new Pong()));
     }
 

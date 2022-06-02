@@ -10,7 +10,8 @@ class ClientMode : Mode
         "\t             sec - encrypt the ping\n" +
         "\tsecure - attempts to secure a connection\n" +
         "\taes - prints the aes key\n" + 
-        "\tdir - prints the content of directory" + 
+        "\tls - prints the content of \n" + 
+        "\tcd - change directory \n" + 
         baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
@@ -23,7 +24,8 @@ class ClientMode : Mode
             {"ping", (o) => this.SendPing(o)},
             {"secure", (_) => this.SecureConnection()},
             {"aes", (_) => this.PrintAesKey()},
-            {"dir", (_) => this.PrintFileDirectory()},
+            {"ls", (o) => this.FileDirectory(o)},
+            {"cd", (o) => this.ChangeDirectory(o)},
         };
     }
 
@@ -47,8 +49,30 @@ class ClientMode : Mode
         connection.AttemptSecuringConnection();
     }
     
-    private void PrintFileDirectory() {
-        connection.AttemptGetFileDirectory();
+    private void FileDirectory(ArraySegment<string> opts) {
+        if (opts.Count > 1) {
+            Console.WriteLine("Invalid number of arguments!");
+            return;
+        }
+        if (opts.Count == 0)
+        {
+            connection.GetFileDirectory("");
+        }
+        if (opts.Count == 1)
+        {
+            connection.GetFileDirectory(opts[0]);
+        }
+    }
+    
+    private void ChangeDirectory(ArraySegment<string> opts) {
+        if (opts.Count > 1) {
+            Console.WriteLine("Invalid number of arguments!");
+            return;
+        }
+        if (opts.Count == 1)
+        {
+            connection.GetChangedDirectory(opts[0]);
+        }
     }
 
     private void PrintAesKey() {

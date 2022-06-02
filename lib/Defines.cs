@@ -6,6 +6,7 @@ public class Constants {
     public const UInt16 DEFAULT_PORT = 32004;
     public const Int32 RSA_KEY_SIZE = 1024;
     public static readonly RSAEncryptionPadding RSA_PADDING_TYPE = RSAEncryptionPadding.OaepSHA1;
+    public const string DEFAULT_PATH = "users/";
 }
 
 public enum MessageKind: byte {
@@ -16,7 +17,12 @@ public enum MessageKind: byte {
     SecureReject = 4,
     SecuredMessage = 5,
     DirectoryRequest = 6,
-    DirectoryAccept = 7,
+    AnnounceDirectoryEntry = 7,
+}
+
+public enum FileSystemType: byte {
+    File = 0,
+    Directory = 1,
 }
 
 static class MessageKindMethods {

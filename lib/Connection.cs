@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using Lib.Defines;
 using Lib.Messages;
 
@@ -10,6 +11,10 @@ public class Connection {
     TcpClient client;
     CancellationTokenSource cancelTokenSource;
     Crypto.SecurityAgent securityAgent;
+    
+    private string _publicKey;
+    private string _privateKey;
+    private string _currentPath = Defines.Constants.DEFAULT_PATH;
 
     public Connection(TcpClient client, CancellationToken cancellationToken) {
         this.client = client;
@@ -36,6 +41,77 @@ public class Connection {
         }
     }
 
+    public void CreateAndSaveEncryptedKeys()
+    {
+        string publicKeyPath = $"./keys/public_key";
+        string privateKeyPath = $"./keys/private_key";
+        
+        if (KeysExists(publicKeyPath, privateKeyPath))
+        {
+            GetKeys(publicKeyPath, privateKeyPath);
+        }
+        else
+        {            
+            int keyBits = 2048;
+            var keygen = new SshKeyGenerator.SshKeyGenerator(keyBits);
+            
+            // extracting only the keys
+            string[] pubKeyList = keygen.ToRfcPublicKey().Split(" ");
+            List<String> privKeyList = new List<string>(keygen.ToPrivateKey().Split("\n"));
+
+            privKeyList.RemoveAt(privKeyList.Count - 1);
+            privKeyList.RemoveAt(privKeyList.Count - 1);
+            privKeyList.RemoveAt(0);
+
+            string priv = String.Join("\n", privKeyList);
+            string privateKey = priv.Replace("\r\n", string.Empty);
+
+            string publicKey = pubKeyList[1];
+            //
+            
+            File.WriteAllText(publicKeyPath, publicKey);
+            File.WriteAllText(privateKeyPath, privateKey);
+
+            _publicKey = publicKey;
+            _privateKey = privateKey;
+        }
+    }
+    
+    public void GetKeys(string publicKeyPath, string privateKeyPath)
+    {
+        if (File.Exists(publicKeyPath))
+        {
+            _publicKey = File.ReadAllText(publicKeyPath);
+        }
+
+        if (File.Exists(privateKeyPath))
+        {
+            _privateKey = File.ReadAllText(privateKeyPath);
+        }
+    }
+    
+    public bool KeysExists(string publicKeyPath, string privateKeyPath)
+    {
+        return File.Exists(publicKeyPath) && File.Exists(privateKeyPath);
+    }
+
+    public void GetChangedDirectory(string path)
+    {
+        if (path == "..")
+        {
+            _currentPath = Path.GetFullPath(Path.Combine(_currentPath, @"../"));
+        }
+        else if (Directory.Exists(_currentPath + path) && path != "..")
+        {
+            _currentPath = _currentPath + path;
+        }
+        else
+        {
+            Console.WriteLine("You entered the wrong path");
+        }
+        Console.WriteLine(_currentPath);
+    }
+
     public void SendPing() {
         var token = cancelTokenSource.Token;
         Util.TaskRunSafe(() => SendMessage(new Ping()));
@@ -57,10 +133,15 @@ public class Connection {
         });
     }
     
-    // TODO: file to be given from the console/gui
-    public void AttemptGetFileDirectory() {
-        var token = cancelTokenSource.Token;
-        Util.TaskRunSafe(() => SendMessage(new DirectoryRequest("aaa")));
+    public void GetFileDirectory(string path) {
+        if (Directory.Exists(_currentPath + path))
+        {
+            Util.TaskRunSafe(() => SendMessage(new DirectoryRequest(path)));
+        }
+        else
+        {
+            Console.WriteLine("Wrong path");
+        }
     }
 
     public byte[]? GetAesKey() => securityAgent.GetAesKey();
@@ -77,7 +158,7 @@ public class Connection {
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
             MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
-            MessageKind.DirectoryAccept => await DirectoryAccept.Deserialize(stream),
+            MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -162,37 +243,23 @@ public class Connection {
 
     protected void HandleMessage(DirectoryRequest msg) {
         Console.WriteLine("Received DirectoryRequest");
-        var token = cancelTokenSource.Token;
         Util.TaskRunSafe(async () =>
         {
-            string pathFiles = "./users/" + msg.fileFolderDirectory;
-            var directoryContentFiles = Directory.GetFiles(pathFiles);
-            Console.WriteLine(directoryContentFiles.Length);
+            string pathFilesDirectories = _currentPath + msg.directory;
+            var contentFilesDirectories = Directory.GetFileSystemEntries(pathFilesDirectories);
 
-            string pathDirectory = "./users/" + msg.fileFolderDirectory;
-            var directoryContentFolders = Directory.GetDirectories(pathDirectory);
-            Console.WriteLine(directoryContentFolders.Length);
-
-            for (int i = 0; i < directoryContentFiles.Length; i++)
+            foreach (var content in contentFilesDirectories)
             {
-                Console.WriteLine(i);
-                Console.WriteLine(directoryContentFiles[i]);
-                SendMessage(new DirectoryAccept(directoryContentFiles[i] + " File " + directoryContentFiles[i].Length/1024/1024 + " MB"));
-            }
-            
-            for (int i = 0; i < directoryContentFolders.Length; i++)
-            {
-                DirectoryInfo di = new DirectoryInfo(directoryContentFolders[i]);
-                var size = di.EnumerateFiles("*.*", SearchOption.AllDirectories).Sum(fi => fi.Length);
-                SendMessage(new DirectoryAccept(directoryContentFolders[i] + " Directory " + directoryContentFolders[i].Length/1024/1024 + " MB"));
+                SendMessage(File.Exists(content)
+                    ? new AnnounceDirectoryEntry(new FileInfo(content))
+                    : new AnnounceDirectoryEntry(new DirectoryInfo(content)));
             }
         });
     }
     
-    protected void HandleMessage(DirectoryAccept msg) {
-        Console.WriteLine("Received DirectoryAccept");
-        var token = cancelTokenSource.Token;
-        Console.WriteLine(msg.fileFolderInfo);
+    protected void HandleMessage(AnnounceDirectoryEntry msg) {
+        Console.WriteLine("Received AnnounceDirectoryEntry");
+        Console.WriteLine($"{msg.fileFolderInfo} is {msg.fileSystemType} ");
     }
     
 }

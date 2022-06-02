@@ -9,7 +9,7 @@ public class SecuredMessage : Message
     byte[] iv;
     byte[] content;
 
-    public override MessageKind Kind => Defines.MessageKind.SecuredMessage;
+    public override MessageKind Kind => MessageKind.SecuredMessage;
 
     public SecuredMessage(Message nested, byte[] aesKey) {
         using var aes = Aes.Create();
@@ -39,6 +39,17 @@ public class SecuredMessage : Message
         var content = await stream.ReadNetIntPrefixedByteArrayAsync(token);
 
         return new SecuredMessage(iv, content);
+    }
+
+    public void FeedNestedTo(Action<Stream> to, byte[] aesKey) {
+        using var aes = Aes.Create();
+        aes.Key = aesKey;
+        aes.IV = iv;
+
+        using var memStream = new MemoryStream(content);
+        using (var cryptoStream = new CryptoStream(memStream, aes.CreateDecryptor(), CryptoStreamMode.Read)) {
+            to(cryptoStream);
+        }
     }
 
     protected override void SerializeIntoInner(System.IO.Stream stream)

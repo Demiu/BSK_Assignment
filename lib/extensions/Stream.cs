@@ -10,6 +10,7 @@ public static class StreamExtension
         while (offset < count) {
             int read = await stream.ReadAsync(buffer, offset, count, token);
             if (read == 0) {
+                //Console.WriteLine("Throwing EOS"); // TODO uncomment when we add proper logging
                 throw new System.IO.EndOfStreamException();
             }
             offset += read;
@@ -30,7 +31,7 @@ public static class StreamExtension
         stream.Write(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(len)));
         stream.Write(array);
     }
-    
+
     public static async Task<string> ReadNetStringAsync(this System.IO.Stream stream, CancellationToken token) {
         return Encoding.UTF8.GetString(await stream.ReadNetIntPrefixedByteArrayAsync(token));
     }

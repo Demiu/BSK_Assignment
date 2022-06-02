@@ -51,7 +51,7 @@ public class SecurityAgent {
     }
 
     // Requires Secured state
-    public byte[] GetAesKey() {
+    public byte[]? GetAesKey() {
         return aesKey;
     }
 

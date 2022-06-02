@@ -9,7 +9,7 @@ public class SecureRequest : Message
 {
     public byte[] publicKey;
 
-    public override MessageKind Kind => Defines.MessageKind.SecureRequest;
+    public override MessageKind Kind => MessageKind.SecureRequest;
 
     public SecureRequest(byte[] publicKey) {
         this.publicKey = publicKey;
@@ -36,14 +36,14 @@ public class SecureAccept : Message
 {
     public byte[] encryptedKey;
 
-    public override MessageKind Kind => Defines.MessageKind.SecureAccept;
+    public override MessageKind Kind => MessageKind.SecureAccept;
 
     public SecureAccept(byte[] pubRsaKey, byte[] aesKey) {
         using var rsa = RSA.Create();
         rsa.ImportRSAPublicKey(pubRsaKey, out var len);
         Debug.Assert(len == pubRsaKey.Length);
 
-        encryptedKey = rsa.Encrypt(aesKey, Defines.Constants.RSA_PADDING_TYPE);
+        encryptedKey = rsa.Encrypt(aesKey, Constants.RSA_PADDING_TYPE);
     }
 
     protected SecureAccept(byte[] encryptedKey) {
@@ -69,7 +69,7 @@ public class SecureAccept : Message
 
 public class SecureReject : Message
 {
-    public override MessageKind Kind => Defines.MessageKind.SecureReject;
+    public override MessageKind Kind => MessageKind.SecureReject;
 
     protected override void SerializeIntoInner(System.IO.Stream stream)
     {

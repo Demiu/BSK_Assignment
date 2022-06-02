@@ -1,0 +1,91 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:gui.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="gui.Views.MainWindow"
+        Icon="/Assets/shield.png"
+        Title="gui"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Panel>
+        <Panel.Styles>
+            <Style Selector = "Button:pointerover/template/ContentPresenter">
+                <Setter Property = "Background" Value = "LightBlue" />
+            </Style> 
+            <Style Selector = "Button:disabled/template/ContentPresenter">
+                <Setter Property = "Background" Value = "#a6a6a6" />
+            </Style> 
+        </Panel.Styles>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        
+        <TextBlock Text="Setup connection" Width="250" Margin="0,40,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="23" Foreground="White" 
+                   TextAlignment="Center" />
+        
+        <!-- Setting up the ip and port -->
+        <TextBox Name="TextIp" Width="150" Margin="0,100,200,0" Background="White" Watermark="IP" VerticalAlignment="Top"
+                 HorizontalAlignment="Center" KeyUp="Txt_KeyUpIp"/>
+        <TextBox Name="TextPort" Width="80" Margin="200,100,0,0" Background="White" Watermark="Port" VerticalAlignment="Top"
+                 HorizontalAlignment="Center" KeyUp="Txt_KeyUpPort"/>
+        
+        <!-- Setting up a whitelist -->
+        <Button Name="ChooseWhitelistButton" Width="150" Margin="0,170,360,0" Content="Choose Whitelist" Background="White" VerticalAlignment="Top"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Click="Click_ChooseWhitelistButton"/>     
+        <Button Name="WhitelistButton" Width="150" Margin="0,170,0,0" Content="Whitelist directory" Background="White" VerticalAlignment="Top"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Top" IsEnabled="False" Click="Click_WhitelistButton"/>
+        <TextBlock Name="WhitelistDirectory" Text="No chosen file" Width="200" Margin="300,170,0,0" 
+                   Foreground="White" VerticalAlignment="Top" HorizontalAlignment="Center" FontWeight="Bold" 
+                   FontStyle="Normal" FontSize="12" TextAlignment="Center"/>
+        
+        <!-- Generating public and private keys -->
+        <Button Name="GenerateKeysButton" Width="150" Margin="0,0,0,0" Content="Generate Keys" Background="White" VerticalAlignment="Center"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Click_GenerateKeys"/>
+        
+        <!-- Generating public and private keys -->
+        <Button Name="PublicKeyButton" Width="150" Margin="0,125,150,0" Content="Choose Public Key" Background="White" VerticalAlignment="Center"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Click_PublicKeyButton"/>
+        <TextBlock Name="PublicKeyFile" Text="" Width="200" Margin="190,125,0,0" 
+                   Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" 
+                   FontStyle="Normal" FontSize="12" TextAlignment="Center"/>
+        <Button Name="PrivateKeyButton" Width="150" Margin="0,250,150,0" Content="Choose Private Key" Background="White" VerticalAlignment="Center"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Click_PrivateKeyButton"/>
+        <TextBlock Name="PrivateKeyFile" Text="" Width="200" Margin="190,250,0,0" 
+                   Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" 
+                   FontStyle="Normal" FontSize="12" TextAlignment="Center"/>
+        
+        <!-- Importing public and private keys -->
+        <Button Name="HostButton" Width="100" Margin="200,0,0,40" Content="Host" Background="White" VerticalAlignment="Bottom"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center"
+                Click="Click_Host" IsEnabled="False" />
+        <Button Name="JoinButton" Width="100" Margin="0,0,200,40" Content="Join" Background="White" VerticalAlignment="Bottom"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center"
+                Click="Click_Join" IsEnabled="False" />
+        
+    </Panel> 
+</Window>

@@ -1,0 +1,43 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="gui.Views.GenerateKeysWindow"
+        Icon="/Assets/shield.png"
+        Title="GenerateKeysWindow"        
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        Height="200" Width="300"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+    
+    <Panel>
+        <Panel.Styles>
+            <Style Selector = "Button:pointerover/template/ContentPresenter">
+                <Setter Property = "Background" Value = "LightBlue" />
+            </Style> 
+            <Style Selector = "Button:disabled/template/ContentPresenter">
+                <Setter Property = "Background" Value = "#a6a6a6" />
+            </Style> 
+        </Panel.Styles>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        
+        <TextBlock Text="Keys generated" Width="250" Margin="0,30,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="20" Foreground="White" 
+                   TextAlignment="Center" />
+        <TextBlock Name="WrongData" Text="Public and private key generated" Width="250" Margin="0,0,0,0" 
+                   VerticalAlignment="Center" HorizontalAlignment="Center" FontStyle="Normal" FontSize="14" 
+                   Foreground="White" TextAlignment="Center" />
+        
+    </Panel>
+</Window>

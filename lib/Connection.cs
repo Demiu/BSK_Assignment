@@ -11,11 +11,6 @@ public class Connection {
     TcpClient client;
     CancellationTokenSource cancelTokenSource;
     Crypto.SecurityAgent securityAgent;
-    
-    private string _publicKey;
-    private string _privateKey;
-    private string _currentPath = Defines.Constants.DEFAULT_PATH;
-
     //bool canSendFiles; // TODO
 
     public Connection(TcpClient client, CancellationToken cancellationToken) {
@@ -42,77 +37,6 @@ public class Connection {
         }
     }
 
-    public void CreateAndSaveEncryptedKeys()
-    {
-        string publicKeyPath = $"./keys/public_key";
-        string privateKeyPath = $"./keys/private_key";
-        
-        if (KeysExists(publicKeyPath, privateKeyPath))
-        {
-            GetKeys(publicKeyPath, privateKeyPath);
-        }
-        else
-        {            
-            int keyBits = 2048;
-            var keygen = new SshKeyGenerator.SshKeyGenerator(keyBits);
-            
-            // extracting only the keys
-            string[] pubKeyList = keygen.ToRfcPublicKey().Split(" ");
-            List<String> privKeyList = new List<string>(keygen.ToPrivateKey().Split("\n"));
-
-            privKeyList.RemoveAt(privKeyList.Count - 1);
-            privKeyList.RemoveAt(privKeyList.Count - 1);
-            privKeyList.RemoveAt(0);
-
-            string priv = String.Join("\n", privKeyList);
-            string privateKey = priv.Replace("\r\n", string.Empty);
-
-            string publicKey = pubKeyList[1];
-            //
-            
-            File.WriteAllText(publicKeyPath, publicKey);
-            File.WriteAllText(privateKeyPath, privateKey);
-
-            _publicKey = publicKey;
-            _privateKey = privateKey;
-        }
-    }
-    
-    public void GetKeys(string publicKeyPath, string privateKeyPath)
-    {
-        if (File.Exists(publicKeyPath))
-        {
-            _publicKey = File.ReadAllText(publicKeyPath);
-        }
-
-        if (File.Exists(privateKeyPath))
-        {
-            _privateKey = File.ReadAllText(privateKeyPath);
-        }
-    }
-    
-    public bool KeysExists(string publicKeyPath, string privateKeyPath)
-    {
-        return File.Exists(publicKeyPath) && File.Exists(privateKeyPath);
-    }
-
-    public void GetChangedDirectory(string path)
-    {
-        if (path == "..")
-        {
-            _currentPath = Path.GetFullPath(Path.Combine(_currentPath, @"../"));
-        }
-        else if (Directory.Exists(_currentPath + path) && path != "..")
-        {
-            _currentPath = _currentPath + path;
-        }
-        else
-        {
-            Console.WriteLine("You entered the wrong path");
-        }
-        Console.WriteLine(_currentPath);
-    }
-
     public void SendPing() {
         var token = cancelTokenSource.Token;
         Util.TaskRunSafe(() => SendMessage(new Ping()));
@@ -135,14 +59,7 @@ public class Connection {
     }
     
     public void GetFileDirectory(string path) {
-        if (Directory.Exists(_currentPath + path))
-        {
-            Util.TaskRunSafe(() => SendMessage(new DirectoryRequest(path)));
-        }
-        else
-        {
-            Console.WriteLine("Wrong path");
-        }
+        Util.TaskRunSafe(() => SendMessage(new DirectoryRequest(path)));
     }
 
     public void RequestFile(string path) {
@@ -253,23 +170,19 @@ public class Connection {
 
     protected void HandleMessage(DirectoryRequest msg) {
         Console.WriteLine("Received DirectoryRequest");
-        Util.TaskRunSafe(async () =>
-        {
-            string pathFilesDirectories = _currentPath + msg.directory;
+        Util.TaskRunSafe(async () => {
+            string pathFilesDirectories = Path.Join(Directory.GetCurrentDirectory(), msg.directory);  // TODO: Use FSAgent's shared dir
             var contentFilesDirectories = Directory.GetFileSystemEntries(pathFilesDirectories);
 
-            foreach (var content in contentFilesDirectories)
-            {
-                SendMessage(File.Exists(content)
-                    ? new AnnounceDirectoryEntry(new FileInfo(content))
-                    : new AnnounceDirectoryEntry(new DirectoryInfo(content)));
+            foreach (var content in contentFilesDirectories) {
+                SendMessage(new AnnounceDirectoryEntry(content));
             }
         });
     }
     
     protected void HandleMessage(AnnounceDirectoryEntry msg) {
         Console.WriteLine("Received AnnounceDirectoryEntry");
-        Console.WriteLine($"{msg.fileFolderInfo} is {msg.fileSystemType} ");
+        Console.WriteLine($"{msg.entryPath} is {msg.fileSystemType} ");
     }
     
     protected void HandleMessage(SecuredMessage msg) {

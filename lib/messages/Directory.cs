@@ -34,18 +34,22 @@ public class DirectoryRequest : Message
 
 public class AnnounceDirectoryEntry : Message
 {
-    public FileSystemInfo fileFolderInfo;
+    public string entryPath;
     public FileSystemType fileSystemType;
-
+    
     public override MessageKind Kind => MessageKind.AnnounceDirectoryEntry;
-
-
-    public AnnounceDirectoryEntry(FileSystemInfo fileFolderInfo)
+    
+    // entryPath should be already checked for existence
+    public AnnounceDirectoryEntry(string entryPath)
     {
-        this.fileFolderInfo = fileFolderInfo;
-
-        fileSystemType = (fileFolderInfo.Attributes & FileAttributes.Directory) == 
-                         FileAttributes.Directory ? FileSystemType.Directory : FileSystemType.File;
+        this.entryPath = entryPath;
+        this.fileSystemType = File.Exists(entryPath) ? FileSystemType.File : FileSystemType.Directory;
+    }
+    
+    protected AnnounceDirectoryEntry(string entryPath, FileSystemType fileSystemType)
+    {
+        this.entryPath = entryPath;
+        this.fileSystemType = fileSystemType;
     }
     
     public static async Task<Message> Deserialize(Stream stream)
@@ -55,16 +59,14 @@ public class AnnounceDirectoryEntry : Message
         var token = src.Token;
         
         string fileFolder = await stream.ReadNetStringAsync(token);
-
-        if (File.Exists(fileFolder))
-        {
-            return new AnnounceDirectoryEntry(new FileInfo(fileFolder));
-        }
-        return new AnnounceDirectoryEntry(new DirectoryInfo(fileFolder));
+        byte type = (await stream.ReadExactlyAsync(1, token))[0];
+        
+        return new AnnounceDirectoryEntry(fileFolder, (FileSystemType) type);
     }
 
     protected override void SerializeIntoInner(System.IO.Stream stream)
     {
-        stream.WriteNetString(fileFolderInfo.FullName);
+        stream.WriteNetString(entryPath);
+        stream.Write(new byte[]{ (byte)fileSystemType });
     }
 }

@@ -56,11 +56,6 @@ public class Server : IDisposable
     private void HandleNewClient(TcpClient client) {
         Console.WriteLine($"New client connected");
         var connection = new Connection(client, cancelTokenSource.Token);
-        
-        // TODO: create keys and save in files
-        connection.CreateAndSaveEncryptedKeys();
-        //
-
         connections.Add(connection);
         Util.TaskRunSafe(() => connection.CommunicationLoop()); // TODO handleconnectionclosed, remove connection on completion
     }

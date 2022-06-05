@@ -103,9 +103,16 @@ public class FileSystemAgent {
         var chunk = await file.ReadExactlyAsync(toRead, new()); // TODO token
 
         while(sentSize != totalSize) {
-            Task.WhenAll(
-                //messageConsumer(new TransferChunk(shareDir, path)) // TODO
+            byte[]? new_chunk = null;
+            toRead = (Int32)Math.Min(Defines.Constants.FILE_TRANSFER_CHUNK_SIZE, totalSize - sentSize - chunk.Length);
+            var read = async () => { new_chunk = await file.ReadExactlyAsync(toRead, new()); };
+
+            await Task.WhenAll(
+                messageConsumer(new TransferChunk(relativePath, chunk)),
+                read()
             );
+            sentSize += chunk.Length;
+            chunk = new_chunk!;
         }
     }
 }

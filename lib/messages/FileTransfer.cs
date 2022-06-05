@@ -26,6 +26,7 @@ public class TransferRequest : Message
 
 public class AnnounceTransfer : Message {
     public string path;
+    public Int64 size;
 
     public override MessageKind Kind => MessageKind.AnnounceTransfer;
 
@@ -34,10 +35,24 @@ public class AnnounceTransfer : Message {
         if (!this.path.StartsWith('/')) { // TODO replace '/' with a constant
             this.path = $"/{this.path}";
         }
+        this.size = new FileInfo(entryFullPath).Length;
+    }
+
+    protected AnnounceTransfer(string path, Int64 size) {
+        this.path = path;
+        this.size = size;
+    }
+
+    public static async Task<Message> Deserialize(Stream stream)
+    {
+        var path = await stream.ReadNetStringAsync(new()); // TODO cancelaltionToken
+        var size = await stream.ReadNetInt64Async(new());
+        return new AnnounceTransfer(path, size);
     }
 
     protected override void SerializeIntoInner(Stream stream)
     {
         stream.WriteNetString(path);
+        stream.WriteNetInt64(size);
     }
 }

@@ -9,6 +9,7 @@ public class Constants {
     public const Int32 RSA_KEY_SIZE = 1024;
     public static readonly RSAEncryptionPadding RSA_PADDING_TYPE = RSAEncryptionPadding.OaepSHA1;
     public const string DEFAULT_PATH = "/";
+    public const Int32 FILE_TRANSFER_CHUNK_SIZE = 1024;
 }
 
 public enum MessageKind: byte {

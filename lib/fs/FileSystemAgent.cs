@@ -69,7 +69,7 @@ public class FileSystemAgent {
         }
     }
 
-    public void AddNewTransfer(string path, Int64 size) {
+    public void NewIncomingTransfer(string path, Int64 size) {
         path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!downloadDir.PathContainsSubPath(path)) {
             // TODO error out, file not in download path
@@ -85,7 +85,27 @@ public class FileSystemAgent {
     }
 
     protected async Task TransferFile(string path, Func<Message, Task> messageConsumer) {
-        //using var file = File.Open(path, FileMode.Open, FileAccess.Read);
-        await messageConsumer(new AnnounceTransfer(shareDir, path));
+        // TODO token
+        var relativePath = Path.GetRelativePath(shareDir, path);
+        if (!relativePath.StartsWith('/')) { // TODO replace '/' with a constant
+            relativePath = $"/{relativePath}";
+        }
+
+        // Create FileStream before announcing transfer, in case it fails to open
+        using var file = File.Open(path, FileMode.Open, FileAccess.Read);
+        Int64 totalSize = file.Length;
+        Int64 sentSize = 0;
+
+        await messageConsumer(new AnnounceTransfer(relativePath, totalSize));
+
+        // Prefeth the first chunk, so we can read the file and send data at the same time
+        var toRead = (Int32)Math.Min(Defines.Constants.FILE_TRANSFER_CHUNK_SIZE, totalSize - sentSize);
+        var chunk = await file.ReadExactlyAsync(toRead, new()); // TODO token
+
+        while(sentSize != totalSize) {
+            Task.WhenAll(
+                //messageConsumer(new TransferChunk(shareDir, path)) // TODO
+            );
+        }
     }
 }

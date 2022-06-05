@@ -30,16 +30,9 @@ public class AnnounceTransfer : Message {
 
     public override MessageKind Kind => MessageKind.AnnounceTransfer;
 
-    public AnnounceTransfer(string basePath, string entryFullPath) {
-        this.path = Path.GetRelativePath(basePath, entryFullPath);
-        if (!this.path.StartsWith('/')) { // TODO replace '/' with a constant
-            this.path = $"/{this.path}";
-        }
-        this.size = new FileInfo(entryFullPath).Length;
-    }
-
-    protected AnnounceTransfer(string path, Int64 size) {
-        this.path = path;
+    // Relative path is from the shareDir of the sender and downloadDir of receiver
+    public AnnounceTransfer(string relativePath, Int64 size) {
+        this.path = relativePath;
         this.size = size;
     }
 

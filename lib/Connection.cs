@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using Lib.Defines;
 using Lib.Messages;
 
@@ -56,6 +57,10 @@ public class Connection {
             }
         });
     }
+    
+    public void GetFileDirectory(string path) {
+        Util.TaskRunSafe(() => SendMessage(new DirectoryRequest(path)));
+    }
 
     public void RequestFile(string path) {
         Util.TaskRunSafe(() => SendMessage(new TransferRequest(path)));
@@ -79,6 +84,8 @@ public class Connection {
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
+            MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
+            MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
             MessageKind.TransferRequest => await TransferRequest.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
@@ -161,6 +168,23 @@ public class Connection {
         });
     }
 
+    protected void HandleMessage(DirectoryRequest msg) {
+        Console.WriteLine("Received DirectoryRequest");
+        Util.TaskRunSafe(async () => {
+            string pathFilesDirectories = Path.Join(Directory.GetCurrentDirectory(), msg.directory);  // TODO: Use FSAgent's shared dir
+            var contentFilesDirectories = Directory.GetFileSystemEntries(pathFilesDirectories);
+
+            foreach (var content in contentFilesDirectories) {
+                SendMessage(new AnnounceDirectoryEntry(content));
+            }
+        });
+    }
+    
+    protected void HandleMessage(AnnounceDirectoryEntry msg) {
+        Console.WriteLine("Received AnnounceDirectoryEntry");
+        Console.WriteLine($"{msg.entryPath} is {msg.fileSystemType} ");
+    }
+    
     protected void HandleMessage(SecuredMessage msg) {
         Console.WriteLine("Received SecuredMessage");
         var token = cancelTokenSource.Token;
@@ -176,4 +200,5 @@ public class Connection {
     //protected void HandleMessage(TransferRequest msg) {
 
     //}
+
 }

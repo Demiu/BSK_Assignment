@@ -32,6 +32,7 @@ public class FileSystemAgent {
         path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!shareDir.PathContainsSubPath(path)) {
             // TODO error out, dir not in share path
+            Console.WriteLine("Error: path not a subpath of shareDir in AnnounceDirectoryContents");
             return;
         }
         var requestedPath = Path.Join(shareDir, path);
@@ -42,9 +43,11 @@ public class FileSystemAgent {
         }
     }
 
-    public async Task TransferFile(string path) {
+    public async Task TransferPath(string path, Func<Message, Task> messageConsumer) {
+        path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!shareDir.PathContainsSubPath(path)) {
             // TODO error out, file not in share path
+            Console.WriteLine("Error: path not a subpath of shareDir in TransferPath");
             return;
         }
         var requestedPath = Path.Join(shareDir, path);
@@ -57,9 +60,15 @@ public class FileSystemAgent {
         } else if (File.Exists(requestedPath)) {
             // TODO send single file
             Console.WriteLine($"requested file: {requestedPath}");
+            await TransferFile(requestedPath, messageConsumer);
         } else {
             // TODO send an error
             Console.WriteLine($"Couldn't find file {requestedPath}");
         }
+    }
+
+    protected async Task TransferFile(string path, Func<Message, Task> messageConsumer) {
+        //using var file = File.Open(path, FileMode.Open, FileAccess.Read);
+        await messageConsumer(new AnnounceTransfer(shareDir, path));
     }
 }

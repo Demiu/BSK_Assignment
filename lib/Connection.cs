@@ -195,6 +195,8 @@ public class Connection {
     }
 
     protected void HandleMessage(TransferRequest msg) {
-        fsAgent.TransferFile(msg.path).Wait();
+        Console.WriteLine("Received TransferRequest");
+        Util.TaskRunSafe(async () => 
+            await fsAgent.TransferPath(msg.path, SendMessage));
     }
 }

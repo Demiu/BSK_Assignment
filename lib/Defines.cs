@@ -21,6 +21,7 @@ public enum MessageKind: byte {
     DirectoryRequest = 6,
     AnnounceDirectoryEntry = 7,
     TransferRequest = 8,
+    AnnounceTransfer = 9,
 }
 
 public enum FileSystemType: byte {

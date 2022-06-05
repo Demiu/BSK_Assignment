@@ -56,31 +56,26 @@ class ClientMode : Mode
     private void ListFiles(ArraySegment<string> opts) {
         if (opts.Count == 0) {
             connection.GetFileDirectory(currentPath);
+            return;
         }
-        else if (opts.Count == 1) {
-            connection.GetFileDirectory(currentPath + opts[0]);
-        }
-        else {
-            Console.WriteLine("Invalid number of arguments!");
-        }
+        var path = String.Join(" ", opts);
+        connection.GetFileDirectory(Path.Combine(currentPath, path));
     }
     
     private void ChangeDirectory(ArraySegment<string> opts) {
         // TODO improve parsing (eg. multiple ..s)
-        if (opts.Count > 1) {
+        if (opts.Count == 0) {
             Console.WriteLine("Invalid number of arguments!");
             return;
         }
-        if (opts.Count == 1) {
-            var path = String.Join(" ", opts);
-            if (path == "..") {
-                var segments = currentPath.Split(Path.DirectorySeparatorChar);
-                currentPath = String.Join(Path.DirectorySeparatorChar, segments[1..]);
-            } else if (path.StartsWith('/')) { // TODO replace '/' with a constant
-                currentPath = path;
-            } else {
-                currentPath += path;
-            }
+        var path = String.Join(" ", opts);
+        if (path == "..") {
+            var segments = currentPath.Split(Path.DirectorySeparatorChar);
+            currentPath = String.Join(Path.DirectorySeparatorChar, segments[1..]);
+        } else if (path.StartsWith('/')) { // TODO replace '/' with a constant
+            currentPath = path;
+        } else {
+            currentPath = Path.Join(currentPath, path);
         }
     }
 
@@ -94,6 +89,6 @@ class ClientMode : Mode
             return;
         }
         var path = String.Join(" ", opts);
-        connection.RequestFile(path);
+        connection.RequestFile(path); // TODO prepend the currentPath
     }
 }

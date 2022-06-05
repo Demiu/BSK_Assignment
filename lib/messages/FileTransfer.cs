@@ -23,3 +23,21 @@ public class TransferRequest : Message
         stream.WriteNetString(path);
     }
 }
+
+public class AnnounceTransfer : Message {
+    public string path;
+
+    public override MessageKind Kind => MessageKind.AnnounceTransfer;
+
+    public AnnounceTransfer(string basePath, string entryFullPath) {
+        this.path = Path.GetRelativePath(basePath, entryFullPath);
+        if (!this.path.StartsWith('/')) { // TODO replace '/' with a constant
+            this.path = $"/{this.path}";
+        }
+    }
+
+    protected override void SerializeIntoInner(Stream stream)
+    {
+        stream.WriteNetString(path);
+    }
+}

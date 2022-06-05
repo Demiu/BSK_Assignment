@@ -49,3 +49,29 @@ public class AnnounceTransfer : Message {
         stream.WriteNetInt64(size);
     }
 }
+
+public class TransferChunk : Message {
+    public string path;
+    public byte[] chunk;
+
+    public override MessageKind Kind => MessageKind.TransferChunk;
+
+    // Relative path is from the shareDir of the sender and downloadDir of receiver
+    public TransferChunk(string relativePath, byte[] chunk) {
+        this.path = relativePath;
+        this.chunk = chunk;
+    }
+
+    public static async Task<Message> Deserialize(Stream stream)
+    {
+        var path = await stream.ReadNetStringAsync(new()); // TODO token
+        var chunk = await stream.ReadNetIntPrefixedByteArrayAsync(new());
+        return new TransferChunk(path, chunk);
+    }
+
+    protected override void SerializeIntoInner(Stream stream)
+    {
+        stream.WriteNetString(path);
+        stream.WriteNetIntPrefixedByteArray(chunk);
+    }
+}

@@ -91,6 +91,7 @@ public class Connection {
             MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
             MessageKind.TransferRequest => await TransferRequest.Deserialize(stream),
             MessageKind.AnnounceTransfer => await AnnounceTransfer.Deserialize(stream),
+            MessageKind.TransferChunk => await TransferChunk.Deserialize(stream),
             _ => throw new UnexpectedEnumValueException<MessageKind,byte>(bkind),
         };
     }
@@ -205,5 +206,11 @@ public class Connection {
     protected void HandleMessage(AnnounceTransfer msg) {
         Console.WriteLine("Received AnnounceTransfer");
         fsAgent.NewIncomingTransfer(msg.path, msg.size);
+    }
+
+    protected void HandleMessage(TransferChunk msg) {
+        //Console.WriteLine("Received TransferChunk");
+        // TODO
+        Console.WriteLine($"TransferChunk: name: {msg.path}, size: {msg.chunk.Length}");
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Lib.Messages;
 
 namespace Lib.Fs;
@@ -5,15 +6,16 @@ namespace Lib.Fs;
 public class FileSystemAgent {
     string shareDir;
     string downloadDir;
+    Dictionary<string, Transfer> ongoingTransfers;
 
-    public FileSystemAgent() {
-        this.shareDir = Defines.Constants.DEFAULT_SHARE_DIR;
-        this.downloadDir = Defines.Constants.DEFAULT_DOWNLOAD_DIR;
-    }
+    public FileSystemAgent() 
+    : this(Defines.Constants.DEFAULT_SHARE_DIR, Defines.Constants.DEFAULT_DOWNLOAD_DIR) 
+    { }
 
     public FileSystemAgent(string shareDir, string downloadDir) {
         this.shareDir = shareDir;
         this.downloadDir = downloadDir;
+        this.ongoingTransfers = new();
     }
 
     public FileSystemAgent DefaultWithShareDir(string shareDir) {
@@ -65,6 +67,21 @@ public class FileSystemAgent {
             // TODO send an error
             Console.WriteLine($"Couldn't find file {requestedPath}");
         }
+    }
+
+    public void AddNewTransfer(string path, Int64 size) {
+        path = path.TrimStart('/'); // TODO replace '/' with a constant
+        if (!downloadDir.PathContainsSubPath(path)) {
+            // TODO error out, file not in download path
+            Console.WriteLine("Error: path not a subpath of downloadDir in TransferPath");
+            return;
+        }
+        var localPath = Path.Join(downloadDir, path);
+        ongoingTransfers.Add(path, new Transfer(localPath, size));
+        Util.TaskRunSafe(async () => {
+            await ongoingTransfers[path].WriteLoop();
+            // TODO remove transfer from ongoingTransfers THIS WILL MAKE IT CONCURRENT
+        });
     }
 
     protected async Task TransferFile(string path, Func<Message, Task> messageConsumer) {

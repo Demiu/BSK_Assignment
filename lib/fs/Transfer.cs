@@ -16,7 +16,12 @@ class Transfer {
         this.totalSize = size;
         this.currentSize = 0;
         this.chunksToWrite = new();
-        this.file = File.Open(path, FileMode.Truncate);
+        
+        var directories = Path.GetDirectoryName(path);
+        if (directories != null) {
+            Directory.CreateDirectory(directories);
+        }
+        this.file = File.Open(path, FileMode.Create);
     }
 
     public async Task WriteLoop() {

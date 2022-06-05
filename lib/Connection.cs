@@ -204,6 +204,6 @@ public class Connection {
 
     protected void HandleMessage(AnnounceTransfer msg) {
         Console.WriteLine("Received AnnounceTransfer");
-        // TODO
+        fsAgent.AddNewTransfer(msg.path, msg.size);
     }
 }

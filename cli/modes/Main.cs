@@ -18,7 +18,7 @@ class MainMode : Mode
     private Dictionary<string, Action<ArraySegment<string>>> functionsVal;
 
     public MainMode() {
-        address = IPAddress.Loopback;
+        address = Lib.Defines.Constants.DEFAULT_ADDRESS;
         port = Lib.Defines.Constants.DEFAULT_PORT;
         functionsVal = new() {
             {"host", (_) => StartServer()},

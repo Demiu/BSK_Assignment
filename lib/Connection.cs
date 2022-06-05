@@ -209,8 +209,7 @@ public class Connection {
     }
 
     protected void HandleMessage(TransferChunk msg) {
-        //Console.WriteLine("Received TransferChunk");
-        // TODO
-        Console.WriteLine($"TransferChunk: name: {msg.path}, size: {msg.chunk.Length}");
+        Console.WriteLine("Received TransferChunk");
+        fsAgent.ReceiveTransferChunk(msg.path, msg.chunk);
     }
 }

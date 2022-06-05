@@ -8,7 +8,6 @@ public static class StreamExtension
         byte[] buffer = new byte[count];
         int offset = 0;
         while (offset < count) {
-            Console.WriteLine($"{offset}\t\t\t{count}\t\t\t{buffer.Length}");
             int read = await stream.ReadAsync(buffer, offset, count - offset, token);
             if (read == 0) {
                 //Console.WriteLine("Throwing EOS"); // TODO uncomment when we add proper logging

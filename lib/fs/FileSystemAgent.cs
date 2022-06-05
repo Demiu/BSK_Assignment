@@ -38,6 +38,7 @@ public class FileSystemAgent {
             return;
         }
         var requestedPath = Path.Join(shareDir, path);
+
         if (Directory.Exists(requestedPath)) {
             foreach (var entry in Directory.GetFileSystemEntries(requestedPath)) {
                 await messageConsumer(new AnnounceDirectoryEntry(shareDir, entry));
@@ -53,35 +54,51 @@ public class FileSystemAgent {
             return;
         }
         var requestedPath = Path.Join(shareDir, path);
+
         if (Directory.Exists(requestedPath)) {
-            // TODO send all files in the directory
+            Console.WriteLine($"requested directory: {requestedPath}");
             foreach (var file in Directory.EnumerateFiles(requestedPath, "*", SearchOption.AllDirectories))
             {
                 Console.WriteLine($"file in requested dir: {file}");
+                await TransferFile(file, messageConsumer);
+                await Console.Out.WriteLineAsync($"Finished sending {file}");
             }
         } else if (File.Exists(requestedPath)) {
-            // TODO send single file
             Console.WriteLine($"requested file: {requestedPath}");
             await TransferFile(requestedPath, messageConsumer);
         } else {
             // TODO send an error
-            Console.WriteLine($"Couldn't find file {requestedPath}");
+            await Console.Out.WriteLineAsync($"Couldn't find anything under {requestedPath}");
         }
+        await Console.Out.WriteLineAsync($"Finished sending {requestedPath}");
     }
 
     public void NewIncomingTransfer(string path, Int64 size) {
         path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!downloadDir.PathContainsSubPath(path)) {
             // TODO error out, file not in download path
-            Console.WriteLine("Error: path not a subpath of downloadDir in TransferPath");
+            Console.WriteLine("Error: path not a subpath of downloadDir in NewIncomingTransfer");
             return;
         }
         var localPath = Path.Join(downloadDir, path);
+
         ongoingTransfers.Add(path, new Transfer(localPath, size));
         Util.TaskRunSafe(async () => {
             await ongoingTransfers[path].WriteLoop();
             // TODO remove transfer from ongoingTransfers THIS WILL MAKE IT CONCURRENT
         });
+    }
+
+    public void ReceiveTransferChunk(string path, byte[] chunk) {
+        path = path.TrimStart('/'); // TODO replace '/' with a constant
+        if (!downloadDir.PathContainsSubPath(path)) {
+            // TODO error out, file not in download path
+            Console.WriteLine("Error: path not a subpath of downloadDir in ReceiveTransferChunk");
+            return;
+        }
+        var localPath = Path.Join(downloadDir, path);
+
+        ongoingTransfers[path].QueueChunk(chunk);
     }
 
     protected async Task TransferFile(string path, Func<Message, Task> messageConsumer) {

@@ -3,7 +3,7 @@ using System.Threading.Tasks.Dataflow;
 namespace Lib.Fs;
 
 // Represents an incoming transfer
-class Transfer {
+class Transfer : IDisposable {
     // TODO: CancellationToken
     readonly Int64 totalSize;
     Int64 currentSize;
@@ -28,6 +28,7 @@ class Transfer {
         // TODO token
         while(currentSize != totalSize) {
             var chunk = await chunksToWrite.ReceiveAsync();
+            Console.WriteLine($"Received chunk of size {chunk.Length}");
             if (currentSize + chunk.Length > totalSize) {
                 Console.WriteLine($"Error: too much data for {file.Name} (expected: {totalSize}, got: {currentSize + chunk.Length})");
                 return;
@@ -35,9 +36,15 @@ class Transfer {
             await file.WriteAsync(chunk);
             currentSize += chunk.Length;
         }
+        file.Close();
     }
 
     public void QueueChunk(byte[] chunk) {
         chunksToWrite.Post(chunk); // TODO maybe SendAsync?
+    }
+
+    public void Dispose()
+    {
+        ((IDisposable)file).Dispose();
     }
 }

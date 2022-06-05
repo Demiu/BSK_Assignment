@@ -1,6 +1,6 @@
 using Lib.Messages;
 
-namespace Lib;
+namespace Lib.Fs;
 
 public class FileSystemAgent {
     string shareDir;

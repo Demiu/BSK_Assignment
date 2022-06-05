@@ -4,7 +4,7 @@ namespace Lib.Messages;
 
 public class TransferRequest : Message
 {
-    string path;
+    public string path;
 
     public override MessageKind Kind => MessageKind.TransferRequest;
 

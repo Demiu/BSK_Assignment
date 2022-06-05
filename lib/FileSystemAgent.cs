@@ -25,4 +25,25 @@ public class FileSystemAgent {
         a.downloadDir = downloadDir;
         return a;
     }
+
+    public async Task TransferFile(string path) {
+        if (!shareDir.PathContainsSubPath(path)) {
+            // TODO error out, file not in share path
+            return;
+        }
+        var requestedPath = Path.Join(shareDir, path);
+        if (Directory.Exists(requestedPath)) {
+            // TODO send all files in the directory
+            foreach (var file in Directory.EnumerateFiles(requestedPath, "*", SearchOption.AllDirectories))
+            {
+                Console.WriteLine($"file in requested dir: {file}");
+            }
+        } else if (File.Exists(requestedPath)) {
+            // TODO send single file
+            Console.WriteLine($"requested file: {requestedPath}");
+        } else {
+            // TODO send an error
+            Console.WriteLine($"Couldn't find file {requestedPath}");
+        }
+    }
 }

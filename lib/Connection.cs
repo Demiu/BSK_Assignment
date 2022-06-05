@@ -198,9 +198,8 @@ public class Connection {
             Console.WriteLine("Received secured message, but no key was established!");
         }
     }
-
-    //protected void HandleMessage(TransferRequest msg) {
-
-    //}
-
+    
+    protected void HandleMessage(TransferRequest msg) {
+        fsAgent.TransferFile(msg.path).Wait();
+    }
 }

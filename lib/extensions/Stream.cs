@@ -18,6 +18,15 @@ public static class StreamExtension
         return buffer;
     }
 
+    public static async Task<Int64> ReadNetInt64Async(this System.IO.Stream stream, CancellationToken token) {
+        var array = await stream.ReadExactlyAsync(8, token);
+        return IPAddress.NetworkToHostOrder(BitConverter.ToInt64(array));
+    }
+
+    public static void WriteNetInt64(this System.IO.Stream stream, Int64 value) {
+        stream.Write(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value)));
+    }
+
     // Reads a byte array that's prefixed by an Int32 (in network order) specifying the array's length
     public static async Task<byte[]> ReadNetIntPrefixedByteArrayAsync(this System.IO.Stream stream, CancellationToken token) {
         var lenArray = await stream.ReadExactlyAsync(4, token);

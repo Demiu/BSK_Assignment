@@ -24,7 +24,7 @@ class MainMode : Mode
             {"host", (_) => StartServer()},
             {"join", (_) => StartClient()},
             {"ip", (o) => SetIp(o)},
-            // {"port" ...} // TODO
+            {"port", (o) => SetPort(o)},
         };
     }
 
@@ -46,6 +46,7 @@ class MainMode : Mode
     private void SetPort(ArraySegment<string> opts) {
         if (opts.Count != 1) {
             Console.WriteLine("Invalid number of arguments!");
+            return;
         }
 
         var ok = UInt16.TryParse(opts[0], out var newPort);

@@ -25,6 +25,8 @@ public class SecurityAgent {
         aesKey = null;
     }
 
+    public bool IsSecured => state == State.Secured;
+
     public bool CanStartSecuring() => state == State.Insecure;
     public bool CanFinishSecuring() => state == State.SelfInitialized;
     public bool CanAcceptSecuring() => state == State.Insecure;

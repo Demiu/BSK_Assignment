@@ -97,6 +97,15 @@ public class Connection {
     }
 
     protected async Task SendMessage(Message msg) {
+        if (securityAgent.IsSecured) {
+            await SendMessageSecured(msg);
+        } else {
+            // TODO deny sending some messages if we're not secured
+            await SendMessageUnsecured(msg);
+        }
+    }
+
+    protected async Task SendMessageUnsecured(Message msg) {
         // TODO if secured prefer 
         var token = cancelTokenSource.Token;
         var serialized = msg.Serialized();
@@ -109,7 +118,7 @@ public class Connection {
             await Task.WhenAll(
                 Console.Out.WriteLineAsync(
                     "Attmpted to secure send a message that's already a SecuredMessage"),
-                SendMessage(msg)
+                SendMessageUnsecured(msg)
             );
             return;
         }
@@ -118,7 +127,7 @@ public class Connection {
             await Console.Out.WriteLineAsync("Failed to secure a message");
             return;
         }
-        await SendMessage(wrapped);
+        await SendMessageUnsecured(wrapped);
     }
 
     protected void HandleMessage(Message msg) {
@@ -145,13 +154,13 @@ public class Connection {
             if (!await securityAgent.AcceptSecuring(msg.publicKey, token)) {
                 await Task.WhenAll(
                     Console.Out.WriteLineAsync("Rejected: null return from AcceptSecuring"),
-                    SendMessage(new SecureReject())
+                    SendMessageUnsecured(new SecureReject())
                 );
                 return;
             }
             await Task.WhenAll(
                 Console.Out.WriteLineAsync("Accepted"),
-                SendMessage(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()))
+                SendMessageUnsecured(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()))
             );
         });
     }

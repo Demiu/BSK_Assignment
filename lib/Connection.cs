@@ -173,12 +173,7 @@ public class Connection {
     protected void HandleMessage(DirectoryRequest msg) {
         Console.WriteLine("Received DirectoryRequest");
         Util.TaskRunSafe(async () => {
-            string pathFilesDirectories = Path.Join(Directory.GetCurrentDirectory(), msg.directory);  // TODO: Use FSAgent's shared dir
-            var contentFilesDirectories = Directory.GetFileSystemEntries(pathFilesDirectories);
-
-            foreach (var content in contentFilesDirectories) {
-                SendMessage(new AnnounceDirectoryEntry(content));
-            }
+            await fsAgent.AnnounceDirectoryContents(msg.directory, SendMessage);
         });
     }
     
@@ -198,7 +193,7 @@ public class Connection {
             Console.WriteLine("Received secured message, but no key was established!");
         }
     }
-    
+
     protected void HandleMessage(TransferRequest msg) {
         fsAgent.TransferFile(msg.path).Wait();
     }

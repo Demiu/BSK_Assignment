@@ -40,10 +40,13 @@ public class AnnounceDirectoryEntry : Message
     public override MessageKind Kind => MessageKind.AnnounceDirectoryEntry;
     
     // entryPath should be already checked for existence
-    public AnnounceDirectoryEntry(string entryPath)
+    public AnnounceDirectoryEntry(string basePath, string entryFullPath)
     {
-        this.entryPath = entryPath;
-        this.fileSystemType = File.Exists(entryPath) ? FileSystemType.File : FileSystemType.Directory;
+        this.entryPath = Path.GetRelativePath(basePath, entryFullPath);
+        if (!this.entryPath.StartsWith('/')) { // TODO replace '/' with a constant
+            this.entryPath = $"/{this.entryPath}";
+        }
+        this.fileSystemType = File.Exists(entryFullPath) ? FileSystemType.File : FileSystemType.Directory;
     }
     
     protected AnnounceDirectoryEntry(string entryPath, FileSystemType fileSystemType)

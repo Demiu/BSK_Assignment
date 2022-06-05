@@ -1,3 +1,5 @@
+using Lib.Messages;
+
 namespace Lib;
 
 public class FileSystemAgent {
@@ -24,6 +26,20 @@ public class FileSystemAgent {
         var a = new FileSystemAgent();
         a.downloadDir = downloadDir;
         return a;
+    }
+
+    public async Task AnnounceDirectoryContents(string path, Func<Message, Task> messageConsumer) {
+        path = path.TrimStart('/'); // TODO replace '/' with a constant
+        if (!shareDir.PathContainsSubPath(path)) {
+            // TODO error out, dir not in share path
+            return;
+        }
+        var requestedPath = Path.Join(shareDir, path);
+        if (Directory.Exists(requestedPath)) {
+            foreach (var entry in Directory.GetFileSystemEntries(requestedPath)) {
+                await messageConsumer(new AnnounceDirectoryEntry(shareDir, entry));
+            }
+        }
     }
 
     public async Task TransferFile(string path) {

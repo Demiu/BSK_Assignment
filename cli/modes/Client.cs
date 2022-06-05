@@ -4,7 +4,7 @@ namespace Cli.Modes;
 
 class ClientMode : Mode
 {
-    protected override string prompt => "client>";
+    protected override string prompt => $"client {currentPath} >";
     protected override string helpText => 
         "\tping [sec] - query sending a ping\n" +
         "\t             sec - encrypt the ping\n" +
@@ -66,19 +66,20 @@ class ClientMode : Mode
     }
     
     private void ChangeDirectory(ArraySegment<string> opts) {
+        // TODO improve parsing (eg. multiple ..s)
         if (opts.Count > 1) {
             Console.WriteLine("Invalid number of arguments!");
             return;
         }
-        if (opts.Count == 1)
-        {
-            if (opts[0] == "..")
-            {
-                currentPath = Path.Combine(currentPath, @"../");
-            }
-            else if (opts[0] != "..")
-            {
-                currentPath += opts[0];
+        if (opts.Count == 1) {
+            var path = String.Join(" ", opts);
+            if (path == "..") {
+                var segments = currentPath.Split(Path.DirectorySeparatorChar);
+                currentPath = String.Join(Path.DirectorySeparatorChar, segments[1..]);
+            } else if (path.StartsWith('/')) { // TODO replace '/' with a constant
+                currentPath = path;
+            } else {
+                currentPath += path;
             }
         }
     }

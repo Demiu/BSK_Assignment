@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using Lib.Crypto;
 using Lib.Defines;
 using Lib.Fs;
 using Lib.Messages;
@@ -14,10 +15,14 @@ public class Connection {
     FileSystemAgent fsAgent;
     //bool canSendFiles; // TODO
 
-    public Connection(TcpClient client, FileSystemAgent fsAgent, CancellationToken cancellationToken) {
+    public Connection(TcpClient client, FileSystemAgent fsAgent, CancellationToken token)
+    : this(client, fsAgent, token, new())
+    { }
+
+    public Connection(TcpClient client, FileSystemAgent fsAgent, CancellationToken token, AsymmetricContainer keyStore) {
         this.client = client;
-        this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        this.securityAgent = new();
+        this.cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+        this.securityAgent = new(keyStore);
         this.fsAgent = fsAgent;
     }
 

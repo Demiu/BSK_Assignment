@@ -14,15 +14,15 @@ public class SecurityAgent {
     }
 
     State state; // Write via mutex
-    RSA? rsa; // Access via mutex
+    AsymmetricContainer keyStore;
     byte[]? aesKey; // Write via mutex
     SemaphoreSlim mutex;
 
-    public SecurityAgent() {
-        state = State.Insecure;
-        mutex = new SemaphoreSlim(1);
-        rsa = null;
-        aesKey = null;
+    public SecurityAgent(AsymmetricContainer keyStore) {
+        this.state = State.Insecure;
+        this.keyStore = keyStore;
+        this.aesKey = null;
+        this.mutex = new SemaphoreSlim(1);
     }
 
     public bool IsSecured => state == State.Secured;
@@ -30,6 +30,7 @@ public class SecurityAgent {
     public bool CanStartSecuring() => state == State.Insecure;
     public bool CanFinishSecuring() => state == State.SelfInitialized;
     public bool CanAcceptSecuring() => state == State.Insecure;
+    public byte[] GetPubRsaKey() => keyStore.GetOwnPubKey();
 
     // TODO rework start/finish/accept securing with returning a message maybe?
 
@@ -44,12 +45,6 @@ public class SecurityAgent {
     // To be used on requestee side
     public async Task<bool> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
         return await RunLocked(() => InitAesWithRsaPubKey(otherPubKey), cancellationToken);
-    }
-
-    // Requires SelfInitialized state
-    public byte[] GetPubRsaKey() {
-        // Will throw NullReferenceException if InitSelfRsa wasn't called
-        return rsa.ExportRSAPublicKey();
     }
 
     // Requires Secured state
@@ -67,7 +62,7 @@ public class SecurityAgent {
     // Requires lock
     protected bool InitSelfRsa() {
         if (CanStartSecuring()) {
-            rsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
+            //rsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
             state = State.SelfInitialized;
             return true;
         }
@@ -77,7 +72,7 @@ public class SecurityAgent {
     // Requires lock
     protected bool InitAesRsaEncrypted(byte[] encryptedAes) {
         if (CanFinishSecuring()) {
-            aesKey = rsa.Decrypt(encryptedAes, Defines.Constants.RSA_PADDING_TYPE);
+            aesKey = keyStore.Decrypt(encryptedAes);
             state = State.Secured;
             return true;
         }

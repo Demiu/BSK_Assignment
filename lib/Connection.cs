@@ -90,6 +90,7 @@ public class Connection {
             MessageKind.Pong => await Pong.Deserialize(stream),
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
+            MessageKind.SecureReject => await SecureReject.Deserialize(stream),
             MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
             MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
             MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
@@ -158,7 +159,7 @@ public class Connection {
             if (!await securityAgent.AcceptSecuring(msg.publicKey, token)) {
                 await Task.WhenAll(
                     Console.Out.WriteLineAsync("Rejected: null return from AcceptSecuring"),
-                    SendMessageUnsecured(new SecureReject())
+                    SendMessageUnsecured(SecureReject.AlreadySecured)
                 );
                 return;
             }
@@ -183,6 +184,15 @@ public class Connection {
                 finishOk 
                 ? "Finished securing" 
                 : "Failed to finish securing: SecurityAgent rejection");
+        });
+    }
+
+    protected void HandleMessage(SecureReject msg) {
+        Console.WriteLine("Received SecureReject");
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(async () => {
+            await securityAgent.CancelSecuring(token);
+            await Console.Out.WriteLineAsync($"Failed to secure connection, reason: {msg.Reason}");
         });
     }
 

@@ -69,10 +69,22 @@ public class SecureAccept : Message
 
 public class SecureReject : Message
 {
+    public SecureRejectReasonKind Reason { get; protected set;}
     public override MessageKind Kind => MessageKind.SecureReject;
 
-    protected override void SerializeIntoInner(System.IO.Stream stream)
-    {
-        throw new NotImplementedException(); // TODO
+    public static SecureReject AlreadySecured = new SecureReject(SecureRejectReasonKind.AlreadySecured);
+    public static SecureReject NotInWhitelist = new SecureReject(SecureRejectReasonKind.NotInWhitelist);
+
+    protected SecureReject(SecureRejectReasonKind reason) {
+        this.Reason = reason;
+    }
+
+    public static async Task<Message> Deserialize(Stream stream) {
+        byte reason = (await stream.ReadExactlyAsync(1, new()))[0]; // TODO token
+        return new SecureReject((SecureRejectReasonKind)reason);
+    }
+
+    protected override void SerializeIntoInner(System.IO.Stream stream) {
+        stream.Write(new byte[]{ (byte)Reason });
     }
 }

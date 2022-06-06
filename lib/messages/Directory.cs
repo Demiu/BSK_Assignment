@@ -35,7 +35,7 @@ public class DirectoryRequest : Message
 public class AnnounceDirectoryEntry : Message
 {
     public string entryPath;
-    public FileSystemType fileSystemType;
+    public FileSystemKind fileSystemType;
     
     public override MessageKind Kind => MessageKind.AnnounceDirectoryEntry;
     
@@ -46,10 +46,10 @@ public class AnnounceDirectoryEntry : Message
         if (!this.entryPath.StartsWith('/')) { // TODO replace '/' with a constant
             this.entryPath = $"/{this.entryPath}";
         }
-        this.fileSystemType = File.Exists(entryFullPath) ? FileSystemType.File : FileSystemType.Directory;
+        this.fileSystemType = File.Exists(entryFullPath) ? FileSystemKind.File : FileSystemKind.Directory;
     }
     
-    protected AnnounceDirectoryEntry(string entryPath, FileSystemType fileSystemType)
+    protected AnnounceDirectoryEntry(string entryPath, FileSystemKind fileSystemType)
     {
         this.entryPath = entryPath;
         this.fileSystemType = fileSystemType;
@@ -64,7 +64,7 @@ public class AnnounceDirectoryEntry : Message
         string fileFolder = await stream.ReadNetStringAsync(token);
         byte type = (await stream.ReadExactlyAsync(1, token))[0];
         
-        return new AnnounceDirectoryEntry(fileFolder, (FileSystemType) type);
+        return new AnnounceDirectoryEntry(fileFolder, (FileSystemKind) type);
     }
 
     protected override void SerializeIntoInner(System.IO.Stream stream)

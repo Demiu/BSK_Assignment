@@ -47,6 +47,10 @@ public class SecurityAgent {
         return await RunLocked(() => InitAesWithRsaPubKey(otherPubKey), cancellationToken);
     }
 
+    public async Task CancelSecuring(CancellationToken cancellationToken) {
+        await RunLocked(() => { this.state = State.Insecure; }, cancellationToken);
+    }
+
     // Requires Secured state
     public byte[]? GetAesKey() {
         return aesKey;
@@ -95,6 +99,15 @@ public class SecurityAgent {
 
         state = State.Secured;
         return true;
+    }
+
+    protected async Task RunLocked(Action toRun, CancellationToken cancellationToken) {
+        await mutex.WaitAsync(cancellationToken);
+        try {
+            toRun();
+        } finally {
+            mutex.Release();
+        }
     }
 
     protected async Task<T> RunLocked<T>(Func<T> toRun, CancellationToken cancellationToken) {

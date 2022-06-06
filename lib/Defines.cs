@@ -28,7 +28,12 @@ public enum MessageKind: byte {
     TransferChunk = 10,
 }
 
-public enum FileSystemType: byte {
+public enum SecureRejectReasonKind: byte {
+    AlreadySecured = 0,
+    NotInWhitelist = 1,
+}
+
+public enum FileSystemKind: byte {
     File = 0,
     Directory = 1,
 }

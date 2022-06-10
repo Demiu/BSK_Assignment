@@ -1,0 +1,124 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:gui.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="gui.Views.ApplicationWindow"
+        Icon="/Assets/shield.png"
+        Title="gui" 
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True" >
+    
+    <Design.DataContext>
+        <vm:ApplicationWindowViewModel/>
+    </Design.DataContext>
+    
+    <Panel>
+        <Panel.Styles>
+            <Style Selector = "Button:pointerover/template/ContentPresenter">
+                <Setter Property = "Background" Value = "LightBlue" />
+            </Style> 
+            <Style Selector = "Button:disabled/template/ContentPresenter">
+                <Setter Property = "Background" Value = "#a6a6a6" />
+            </Style> 
+        </Panel.Styles>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        
+        <!-- Directory tree --> 
+        <TreeView Items="{Binding Items}" 
+                  Width="175" Height="520" Margin="20, 40,20,40" Background="White"
+                  HorizontalAlignment="Left" FontSize="10">
+            <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Subfolders}">
+                    <Canvas>
+                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}" DoubleTapped="strNodeText_DoubleTapped"
+                                   Width="175" Height="20"/>    
+                    </Canvas>
+                </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        
+        <!-- Encryption mode selection --> 
+        <TextBlock Text="Choose Encoding:" Width="150" Margin="0,40,90,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="16" Foreground="White" TextAlignment="Center" />
+        <RadioButton Name="EbcButton" Content="EBC" Margin="200,35,0,0" VerticalAlignment="Top"
+                     HorizontalAlignment="Center" Foreground="White" IsChecked = "False" ></RadioButton>
+        <RadioButton Name="CbcButton" Content="CBC" Margin="0,35,90,0" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" Foreground="White" IsChecked = "True" ></RadioButton>
+        
+        <!-- Controls for sending and reading messages -->        
+        <TextBox Name="SendText" Height="260" Width="265" Margin="0,80,80,0" Background="White" Text="" VerticalAlignment="Top"
+                 HorizontalAlignment="Center" IsReadOnly="True" TextWrapping="Wrap" />
+        <TextBox Name="MessagesText" Height="60" Width="550" Margin="0,165,20,0" Background="White" Watermark="Text" VerticalAlignment="Center"
+                 HorizontalAlignment="Right" KeyUp="Txt_KeyUp" TextWrapping="Wrap" />
+        <Button Name="MessageButton" Width="150" Margin="200,270,0,0" Content="Send Message" Background="White" VerticalAlignment="Center"
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
+                HorizontalContentAlignment="Center" IsEnabled="False" Click="Click_SendMessage"/>
+        
+        <!-- Transfer list for files and folders with ProgressBar --> 
+        <TextBlock Name="File1Text" Text="File1" Width="200" Margin="450,80,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File2Text" Text="File2" Width="200" Margin="450,110,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File3Text" Text="File3" Width="200" Margin="450,140,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File4Text" Text="File4" Width="200" Margin="450,170,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File5Text" Text="File5" Width="200" Margin="450,200,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File6Text" Text="File6" Width="200" Margin="450,230,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File7Text" Text="File7" Width="200" Margin="450,260,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File8Text" Text="File8" Width="200" Margin="450,290,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <TextBlock Name="File9Text" Text="File9" Width="200" Margin="450,320,0,0" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
+        <ProgressBar Name="ProgressBar1" Width="60" Margin="0,80,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40" ></ProgressBar>
+        <ProgressBar Name="ProgressBar2" Width="60" Margin="0,110,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar3" Width="60" Margin="0,140,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar4" Width="60" Margin="0,170,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar5" Width="60" Margin="0,200,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar6" Width="60" Margin="0,230,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar7" Width="60" Margin="0,260,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar8" Width="60" Margin="0,290,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        <ProgressBar Name="ProgressBar9" Width="60" Margin="0,320,20,0" Background="LightBlue" VerticalAlignment="Top"
+                     HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
+                     MinWidth="40"></ProgressBar>
+        
+        <!-- TextBox for Logs -->
+        <TextBox Name="LogsText" Text="" Width="550" Height="100" Margin="0,0,20,40" 
+                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="White"
+                 TextWrapping="Wrap" IsReadOnly="True"/>
+        
+    </Panel>
+</Window>

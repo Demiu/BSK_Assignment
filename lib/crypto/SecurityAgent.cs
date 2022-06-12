@@ -128,7 +128,12 @@ public class SecurityAgent {
             return SecureReject.WrongState;
         }
         if (!msg.CheckSignature()) {
+            state = State.Insecure;
             return SecureReject.InvalidSignature;
+        }
+        if (whitelistEnabled && !keyStore.PubKeyKnown(msg.signingPublicKey)) {
+            state = State.Insecure;
+            return SecureReject.NotInWhitelist;
         }
 
         aesKey = keyStore.Decrypt(msg.encryptedKey);
@@ -142,6 +147,7 @@ public class SecurityAgent {
             return SecureReject.WrongState;
         }
         if (whitelistEnabled && !keyStore.PubKeyKnown(msg.publicKey)) {
+            state = State.Insecure;
             return SecureReject.NotInWhitelist;
         }
 

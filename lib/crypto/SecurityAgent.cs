@@ -18,8 +18,8 @@ public class SecurityAgent {
         CBC
     }
 
+    public PreferredMode preferredMode;
     State state; // Write via mutex
-    PreferredMode preferredMode;
     AsymmetricContainer keyStore;
     byte[]? aesKey; // Write via mutex
     SemaphoreSlim mutex;

@@ -92,6 +92,7 @@ public class Connection {
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecureReject => await SecureReject.Deserialize(stream),
             MessageKind.SecuredMessageCBC => await SecuredMessageCBC.Deserialize(stream),
+            MessageKind.SecuredMessageECB => await SecuredMessageECB.Deserialize(stream),
             MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
             MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
             MessageKind.TransferRequest => await TransferRequest.Deserialize(stream),
@@ -119,18 +120,10 @@ public class Connection {
     }
 
     protected async Task SendMessageSecured(Message msg) {
-        if (msg is SecuredMessageCBC) {
+        if (msg is SecuredMessageCBC || msg is SecuredMessageECB) {
             await Task.WhenAll(
                 Console.Out.WriteLineAsync(
-                    "Attmpted to secure send a message that's already a SecuredMessageCBC"),
-                SendMessageUnsecured(msg)
-            );
-            return;
-        }
-        if (msg is SecuredMessageECB) {
-            await Task.WhenAll(
-                Console.Out.WriteLineAsync(
-                    "Attmpted to secure send a message that's already a SecuredMessageECB"),
+                    "Attmpted to secure send a message that's already a SecuredMessageCBC/SecuredMessageECB"),
                 SendMessageUnsecured(msg)
             );
             return;
@@ -218,6 +211,18 @@ public class Connection {
     
     protected void HandleMessage(SecuredMessageCBC msg) {
         Console.WriteLine("Received SecuredMessageCBC");
+        var token = cancelTokenSource.Token;
+        var key = securityAgent.GetAesKey();
+        if (key != null) {
+            Action<Stream> syncRecv = (s) => ReceiveMessageFrom(s, token).Wait();
+            msg.FeedNestedTo(syncRecv, key);
+        } else {
+            Console.WriteLine("Received secured message, but no key was established!");
+        }
+    }
+    
+    protected void HandleMessage(SecuredMessageECB msg) {
+        Console.WriteLine("Received SecuredMessageECB");
         var token = cancelTokenSource.Token;
         var key = securityAgent.GetAesKey();
         if (key != null) {

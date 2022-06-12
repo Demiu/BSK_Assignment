@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Xunit;
 
 namespace tests;
@@ -31,5 +32,17 @@ qf0bX1MvZiiPAgMBAAE=
         var wrongPem = pem.Replace("RSA PUBLIC KEY", "MUMBO JUMBO");
         var container = new Lib.Crypto.AsymmetricContainer();
         Assert.False(container.LoadPubFromPem(wrongPem));
+    }
+
+    [Fact]
+    public void GeneratedLoadedPubKeyIsKnown() {
+        using var rsa = RSA.Create();
+
+        var container = new Lib.Crypto.AsymmetricContainer();
+        var pem = rsa.ExportPublicKeyPem();
+        container.LoadPubFromPem(pem);
+        var pubKey = rsa.ExportRSAPublicKey();
+
+        Assert.True(container.PubKeyKnown(pubKey));
     }
 }

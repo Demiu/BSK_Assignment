@@ -66,6 +66,10 @@ public class Connection {
             }
         });
     }
+
+    public void ChangePreferredEncryptionMode(EncryptionMode newPreferred) {
+        securityAgent.preferredMode = newPreferred;
+    }
     
     public void GetFileDirectory(string path) {
         Util.TaskRunSafe(() => SendMessage(new DirectoryRequest(path)));
@@ -75,6 +79,7 @@ public class Connection {
         Util.TaskRunSafe(() => SendMessage(new TransferRequest(path)));
     }
 
+    public EncryptionMode GetPreferredEncryptionMode() => securityAgent.preferredMode;
     public byte[]? GetAesKey() => securityAgent.GetAesKey();
 
     protected async Task ReceiveMessageFrom(Stream stream, CancellationToken token) {

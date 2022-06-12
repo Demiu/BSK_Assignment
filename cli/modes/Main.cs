@@ -28,6 +28,11 @@ class MainMode : Mode
         };
     }
 
+    protected override void OnExit()
+    {
+        // nothing
+    }
+
     private void SetIp(ArraySegment<string> opts) {
         if (opts.Count != 1) {
             Console.WriteLine("Invalid number of arguments!");
@@ -81,7 +86,7 @@ class MainMode : Mode
         }
         Lib.Util.TaskRunSafe(() => connection.CommunicationLoop());
 
-        var clientMode = new ClientMode(connection);
+        var clientMode = new ClientMode(connection, ct);
         clientMode.Run();
     }
 }

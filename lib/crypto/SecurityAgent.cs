@@ -47,12 +47,8 @@ public class SecurityAgent {
         SelfAccepted,
         Secured,
     }
-    public enum PreferredMode : byte {
-        ECB,
-        CBC
-    }
 
-    public PreferredMode preferredMode;
+    public volatile EncryptionMode preferredMode;
     volatile State state; // Write via mutex
     AsymmetricContainer keyStore;
     volatile byte[]? aesKey; // Write via mutex
@@ -61,7 +57,7 @@ public class SecurityAgent {
 
     public SecurityAgent(AsymmetricContainer keyStore) {
         this.state = State.Insecure;
-        this.preferredMode = PreferredMode.CBC;
+        this.preferredMode = EncryptionMode.CBC;
         this.keyStore = keyStore;
         this.aesKey = null;
         this.mutex = new SemaphoreSlim(1);
@@ -111,9 +107,9 @@ public class SecurityAgent {
             return null;
         }
         return preferredMode switch {
-            PreferredMode.CBC => new SecuredMessageCBC(toSecure, aesKey!),
-            PreferredMode.ECB => new SecuredMessageECB(toSecure, aesKey!),
-            _ => throw new UnexpectedEnumValueException<PreferredMode,byte>((byte)preferredMode),
+            EncryptionMode.CBC => new SecuredMessageCBC(toSecure, aesKey!),
+            EncryptionMode.ECB => new SecuredMessageECB(toSecure, aesKey!),
+            _ => throw new UnexpectedEnumValueException<EncryptionMode,byte>((byte)preferredMode),
         };
     }
 

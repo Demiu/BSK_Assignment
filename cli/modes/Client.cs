@@ -14,23 +14,32 @@ class ClientMode : Mode
         "\tcd - change directory \n" + 
         "\taes - prints the aes key \n" + 
         "\tget path - request the file on server under path, verbatim \n" + 
+        "\tencmode [mode] - get/set preferred outgoing encryption mode\n" +
         baseHelpText;
     protected override Dictionary<string, Action<ArraySegment<string>>> functions => functionsVal;
 
-    private Connection connection;
-    private Dictionary<string, Action<ArraySegment<string>>> functionsVal;
-    private string currentPath = Lib.Defines.Constants.DEFAULT_PATH;
+    Connection connection;
+    CancellationTokenSource ctSource;
+    Dictionary<string, Action<ArraySegment<string>>> functionsVal;
+    string currentPath = Lib.Defines.Constants.DEFAULT_PATH;
 
-    public ClientMode(Connection connection) {
+    public ClientMode(Connection connection, CancellationTokenSource source) {
         this.connection = connection;
-        functionsVal = new() {
+        this.ctSource = source;
+        this.functionsVal = new() {
             {"ping", (o) => this.SendPing(o)},
             {"secure", (_) => this.SecureConnection()},
             {"aes", (_) => this.PrintAesKey()},
             {"ls", (o) => this.ListFiles(o)},
             {"cd", (o) => this.ChangeDirectory(o)},
             {"get", (o) => this.FetchFile(o)},
+            {"encmode", (o) => this.SetEncryptionMode(o)},
         };
+    }
+
+    protected override void OnExit()
+    {
+        ctSource.Cancel();
     }
 
     private void SendPing(ArraySegment<string> opts) {
@@ -89,6 +98,26 @@ class ClientMode : Mode
             return;
         }
         var path = String.Join(" ", opts);
-        connection.RequestFile(path); // TODO prepend the currentPath
+        connection.RequestFile(Path.Combine(currentPath, path));
+    }
+
+    private void SetEncryptionMode(ArraySegment<string> opts) {
+        if (opts.Count == 0) {
+            Console.WriteLine($"Preferred encryption mode is {connection.GetPreferredEncryptionMode()}");
+            return;
+        } else if (opts.Count != 1) {
+            Console.WriteLine("Invalid number of arguments!");
+            return;
+        }
+        var newModeStr = opts[0];
+        if (newModeStr == "cbc") {
+            Console.WriteLine("Setting preferred mode to cbc");
+            connection.ChangePreferredEncryptionMode(Lib.Defines.EncryptionMode.CBC);
+        } else if (newModeStr == "ecb") {
+            Console.WriteLine("Setting preferred mode to ecb");
+            connection.ChangePreferredEncryptionMode(Lib.Defines.EncryptionMode.ECB);
+        } else {
+            Console.WriteLine("Unknown encryption mode, recognized modes: ecb, cbc");
+        }
     }
 }

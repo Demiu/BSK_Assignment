@@ -24,6 +24,7 @@ abstract class Mode {
                 Console.WriteLine(helpText);
                 break;
             case "exit": 
+                OnExit();
                 Console.WriteLine("Exiting...");
                 return;
             default:
@@ -37,4 +38,6 @@ abstract class Mode {
             }
         }
     }
+
+    protected abstract void OnExit();
 }

@@ -32,6 +32,11 @@ public enum MessageKind: byte {
     TransferChunk = 12,
 }
 
+public enum EncryptionMode {
+    ECB,
+    CBC
+}
+
 public enum SecureRejectReasonKind: byte {
     WrongState = 0,
     NotInWhitelist = 1,

@@ -25,6 +25,11 @@ class ServerMode : Mode
         };
     }
 
+    protected override void OnExit()
+    {
+        // TODO cancellationTOken
+    }
+
     private void SendPing() {
         server.PingAll();
     }

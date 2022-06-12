@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
+using Lib.Defines;
 using Lib.Messages;
 
 namespace Lib.Crypto;
@@ -12,14 +13,20 @@ public class SecurityAgent {
         BothInitialized,
         Secured,
     }
+    public enum PreferredMode : byte {
+        ECB,
+        CBC
+    }
 
     State state; // Write via mutex
+    PreferredMode preferredMode;
     AsymmetricContainer keyStore;
     byte[]? aesKey; // Write via mutex
     SemaphoreSlim mutex;
 
     public SecurityAgent(AsymmetricContainer keyStore) {
         this.state = State.Insecure;
+        this.preferredMode = PreferredMode.CBC;
         this.keyStore = keyStore;
         this.aesKey = null;
         this.mutex = new SemaphoreSlim(1);
@@ -56,11 +63,15 @@ public class SecurityAgent {
         return aesKey;
     }
 
-    public SecuredMessageCBC? TrySecureMessage(Message toSecure) {
+    public Message? TrySecureMessage(Message toSecure) {
         if (state != State.Secured) {
             return null;
         }
-        return new SecuredMessageCBC(toSecure, aesKey!);
+        return preferredMode switch {
+            PreferredMode.CBC => new SecuredMessageCBC(toSecure, aesKey!),
+            PreferredMode.ECB => new SecuredMessageECB(toSecure, aesKey!),
+            _ => throw new UnexpectedEnumValueException<PreferredMode,byte>((byte)preferredMode),
+        };
     }
 
     // Requires lock

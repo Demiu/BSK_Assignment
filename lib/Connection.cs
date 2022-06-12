@@ -102,6 +102,7 @@ public class Connection {
     }
 
     protected async Task SendMessage(Message msg) {
+        // TODO if secured prefer 
         if (securityAgent.IsSecured) {
             await SendMessageSecured(msg);
         } else {
@@ -111,7 +112,6 @@ public class Connection {
     }
 
     protected async Task SendMessageUnsecured(Message msg) {
-        // TODO if secured prefer 
         var token = cancelTokenSource.Token;
         var serialized = msg.Serialized();
         var sent = await client.Client.SendAsync(serialized, SocketFlags.None, token);
@@ -123,6 +123,14 @@ public class Connection {
             await Task.WhenAll(
                 Console.Out.WriteLineAsync(
                     "Attmpted to secure send a message that's already a SecuredMessageCBC"),
+                SendMessageUnsecured(msg)
+            );
+            return;
+        }
+        if (msg is SecuredMessageECB) {
+            await Task.WhenAll(
+                Console.Out.WriteLineAsync(
+                    "Attmpted to secure send a message that's already a SecuredMessageECB"),
                 SendMessageUnsecured(msg)
             );
             return;

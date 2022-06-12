@@ -10,6 +10,8 @@ public class Constants {
     public static readonly IPAddress DEFAULT_ADDRESS = IPAddress.Any;
     public const Int32 RSA_KEY_SIZE = 1024;
     public static readonly RSAEncryptionPadding RSA_PADDING_TYPE = RSAEncryptionPadding.OaepSHA1;
+    public static readonly HashAlgorithmName SIGNING_HASH_ALGO = HashAlgorithmName.SHA256;
+    public static readonly RSASignaturePadding SIGNING_PADDING_TYPE = RSASignaturePadding.Pkcs1;
     public const string DEFAULT_PATH = "/";
     public const Int32 FILE_TRANSFER_CHUNK_SIZE = 1024;
 }
@@ -19,19 +21,21 @@ public enum MessageKind: byte {
     Pong = 1,
     SecureRequest = 2,
     SecureAccept = 3,
-    SecureReject = 4,
-    SecuredMessageCBC = 5,
-    SecuredMessageECB = 6,
-    DirectoryRequest = 7,
-    AnnounceDirectoryEntry = 8,
-    TransferRequest = 9,
-    AnnounceTransfer = 10,
-    TransferChunk = 11,
+    SecureFinalize = 4,
+    SecureReject = 5,
+    SecuredMessageCBC = 6,
+    SecuredMessageECB = 7,
+    DirectoryRequest = 8,
+    AnnounceDirectoryEntry = 9,
+    TransferRequest = 10,
+    AnnounceTransfer = 11,
+    TransferChunk = 12,
 }
 
 public enum SecureRejectReasonKind: byte {
     WrongState = 0,
     NotInWhitelist = 1,
+    InvalidSignature = 2,
 }
 
 public enum FileSystemKind: byte {

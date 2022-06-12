@@ -4,7 +4,7 @@ namespace Lib.Crypto;
 
 public class AsymmetricContainer {
     List<RSA> knownPublicKeys;
-    RSA ownPair;
+    public RSA OwnPair { get; protected set;}
 
     public AsymmetricContainer()
     : this(RSA.Create(Defines.Constants.RSA_KEY_SIZE))
@@ -12,7 +12,7 @@ public class AsymmetricContainer {
 
     public AsymmetricContainer(RSA ownPair) {
         this.knownPublicKeys = new();
-        this.ownPair = ownPair;
+        this.OwnPair = ownPair;
     }
 
     public static AsymmetricContainer FromPem(string pem) {
@@ -21,8 +21,8 @@ public class AsymmetricContainer {
         return new AsymmetricContainer(rsa);
     }
 
-    public byte[] GetOwnPubKey() => ownPair.ExportRSAPublicKey();
-    public byte[] Decrypt(byte[] data) => ownPair.Decrypt(data, Defines.Constants.RSA_PADDING_TYPE);
+    public byte[] GetOwnPubKey() => OwnPair.ExportRSAPublicKey();
+    public byte[] Decrypt(byte[] data) => OwnPair.Decrypt(data, Defines.Constants.RSA_PADDING_TYPE);
 
     public bool LoadPubFromPem(string pem) {
         var rsa = RSA.Create();

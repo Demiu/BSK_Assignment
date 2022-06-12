@@ -15,7 +15,7 @@ public class SecurityAgent {
     //   │  │      recv SecureReject           │                            │
     //   │  └──────────────────────────────────┘                         ┌──▼──┐
     //   │                                                               │     │
-    //   │                whitelist ON AND NOT key in whitelist          └─┬─┬─┘
+    //   │ (whitelist ON AND NOT key in whitelist) OR invalid signature  └─┬─┬─┘
     //   │                          send SecureReject                      │ │
     //   └─────────────────────────────────────────────────────────────────┘ │
     //                                                                       │
@@ -73,6 +73,7 @@ public class SecurityAgent {
     public bool CanStartSecuring() => state == State.Insecure;
     public bool CanFinishSecuring() => state == State.Requested;
     public bool CanAcceptSecuring() => state == State.Insecure;
+    public bool CanFinalizeSecuring() => state == State.SelfAccepted;
     public byte[] GetPubRsaKey() => keyStore.GetOwnPubKey();
 
     // TODO rework start/finish/accept securing with returning a message maybe?
@@ -82,14 +83,18 @@ public class SecurityAgent {
     public async Task<Message?> StartSecuring(CancellationToken cancellationToken) {
         return await RunLocked(() => StartSecuringInternal(), cancellationToken);
     }
-    public async Task<bool> FinishSecuring(byte[] encryptedAesKey, CancellationToken cancellationToken) {
-        return await RunLocked(() => FinishSecuringInternal(encryptedAesKey), cancellationToken);    
+    // Returns a Message to send in response (either a SecureFinalize or SecureReject)
+    public async Task<Message> FinishSecuring(SecureAccept msg, CancellationToken cancellationToken) {
+        return await RunLocked(() => FinishSecuringInternal(msg), cancellationToken);    
     }
 
     // To be used on requested side
     // Returns a Message to send in response (either a SecureAccept or SecureReject)
-    public async Task<Message> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
-        return await RunLocked(() => AcceptSecuringInternal(otherPubKey), cancellationToken);
+    public async Task<Message> AcceptSecuring(SecureRequest msg, CancellationToken cancellationToken) {
+        return await RunLocked(() => AcceptSecuringInternal(msg), cancellationToken);
+    }
+    public async Task<bool> FinalizeSecuring(SecureFinalize msg, CancellationToken cancellationToken) {
+        return await RunLocked(() => FinalizeSecuringInternal(msg), cancellationToken);
     }
 
     public async Task CancelSecuring(CancellationToken cancellationToken) {
@@ -122,34 +127,47 @@ public class SecurityAgent {
     }
 
     // Requires lock
-    protected bool FinishSecuringInternal(byte[] encryptedAes) {
-        if (CanFinishSecuring()) {
-            aesKey = keyStore.Decrypt(encryptedAes);
-            state = State.Secured;
-            return true;
+    protected Message FinishSecuringInternal(SecureAccept msg) {
+        if (!CanFinishSecuring()) {
+            return SecureReject.WrongState;
         }
-        return false;
+        if (!msg.CheckSignature()) {
+            return SecureReject.InvalidSignature;
+        }
+
+        aesKey = keyStore.Decrypt(msg.encryptedKey);
+        state = State.Secured;
+        return new SecureFinalize();
     }
 
     // Requires lock
-    protected Message AcceptSecuringInternal(byte[] otherPubKey) {
+    protected Message AcceptSecuringInternal(SecureRequest msg) {
         if (!CanAcceptSecuring()) {
             return SecureReject.WrongState;
         }
-        if (whitelistEnabled && !keyStore.PubKeyKnown(otherPubKey)) {
+        if (whitelistEnabled && !keyStore.PubKeyKnown(msg.publicKey)) {
             return SecureReject.NotInWhitelist;
         }
 
         var otherRsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
-        otherRsa.ImportRSAPublicKey(otherPubKey, out var len);
-        Debug.Assert(len == otherPubKey.Length);
+        otherRsa.ImportRSAPublicKey(msg.publicKey, out var len);
+        Debug.Assert(len == msg.publicKey.Length);
         
         using (var aes = Aes.Create()) {
             aesKey = aes.Key;
         }
 
+        state = State.SelfAccepted;
+        return new SecureAccept(msg.publicKey, keyStore.OwnPair, aesKey);
+    }
+
+    // Requires lock
+    protected bool FinalizeSecuringInternal(SecureFinalize msg) {
+        if (!CanFinalizeSecuring()) {
+            return false;
+        }
         state = State.Secured;
-        return new SecureAccept(otherPubKey, aesKey);
+        return true;
     }
 
     protected async Task RunLocked(Action toRun, CancellationToken cancellationToken) {

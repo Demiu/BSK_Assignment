@@ -92,6 +92,7 @@ public class Connection {
             MessageKind.Pong => await Pong.Deserialize(stream),
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
+            MessageKind.SecureFinalize => await SecureFinalize.Deserialize(stream),
             MessageKind.SecureReject => await SecureReject.Deserialize(stream),
             MessageKind.SecuredMessageCBC => await SecuredMessageCBC.Deserialize(stream),
             MessageKind.SecuredMessageECB => await SecuredMessageECB.Deserialize(stream),
@@ -159,7 +160,7 @@ public class Connection {
                 await Console.Out.WriteLineAsync("Rejected: Can't start securing");
                 return;
             }
-            var outMsg = await securityAgent.AcceptSecuring(msg.publicKey, token);
+            var outMsg = await securityAgent.AcceptSecuring(msg, token);
 
             string logResult;
             if (outMsg is SecureReject) {
@@ -186,12 +187,36 @@ public class Connection {
                 await Console.Out.WriteLineAsync("Cannot finish securing");
                 return;
             }
-            var finishOk = await securityAgent.FinishSecuring(msg.encryptedKey, token);
-            Debug.Assert(finishOk);
-            await Console.Out.WriteLineAsync(
-                finishOk 
-                ? "Finished securing" 
-                : "Failed to finish securing: SecurityAgent rejection");
+            var outMsg = await securityAgent.FinishSecuring(msg, token);
+
+            string logResult;
+            if (outMsg is SecureReject) {
+                var outMsgRej = (SecureReject)outMsg;
+                logResult = $"Rejected securing (finalize): {outMsgRej.Reason.ToString()}";
+            } else if (outMsg is SecureFinalize) {
+                logResult = "Accepted securing (finalize)";
+            } else { 
+                throw new InvalidOperationException("SecurityAgent.FinishSecuring returned an unknown type");
+            }
+            
+            await Task.WhenAll(
+                Console.Out.WriteLineAsync(logResult),
+                SendMessageUnsecured(outMsg)
+            );
+        });
+    }
+
+    protected void HandleMessage(SecureFinalize msg) {
+        Console.WriteLine("Received SecureFinalize");
+        var token = cancelTokenSource.Token;
+        Util.TaskRunSafe(async () => {
+            var finalizeOk = await securityAgent.FinalizeSecuring(msg, token);
+            Debug.Assert(finalizeOk);
+            await Console.Out.WriteAsync(
+                finalizeOk 
+                ? "Finalized securing"
+                : "Failed to finalize securing"
+            );
         });
     }
 

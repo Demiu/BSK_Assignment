@@ -30,7 +30,7 @@ public enum MessageKind: byte {
 }
 
 public enum SecureRejectReasonKind: byte {
-    AlreadySecured = 0,
+    WrongState = 0,
     NotInWhitelist = 1,
 }
 

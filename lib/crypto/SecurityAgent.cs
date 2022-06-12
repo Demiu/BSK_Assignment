@@ -7,10 +7,44 @@ using Lib.Messages;
 namespace Lib.Crypto;
 
 public class SecurityAgent {
+    // Secure flow for requesting side
+    // 
+    // ┌─────────┐ send SecureRequest     ┌─────────┐  recv SecureAccept
+    // │Insercure├────────────────────────►Requested├───────────────────────┐
+    // └─▲──▲────┘                        └────┬────┘                       │
+    //   │  │      recv SecureReject           │                            │
+    //   │  └──────────────────────────────────┘                         ┌──▼──┐
+    //   │                                                               │     │
+    //   │                whitelist ON AND NOT key in whitelist          └─┬─┬─┘
+    //   │                          send SecureReject                      │ │
+    //   └─────────────────────────────────────────────────────────────────┘ │
+    //                                                                       │
+    //             whitelist OFF OR (whitelist ON AND key in whitelist)      │
+    // ┌───────┐                   send SecureFinalize                       │
+    // │Secured◄─────────────────────────────────────────────────────────────┘
+    // └───────┘
+    // Secure flow for requested side
+    // 
+    // ┌─────────┐              recv SecureRequest                       ┌─────┐
+    // │Insercure├───────────────────────────────────────────────────────►     │
+    // └──▲───▲──┘                                                       └─┬─┬─┘
+    //    │   │                       whitelist ON AND NOT key in whitelist│ │
+    //    │   │                                           send SecureReject│ │
+    //    │   └────────────────────────────────────────────────────────────┘ │
+    //    │                                                                  │
+    //    │              whitelist OFF OR (whitelist ON AND key in whitelist)│
+    //    │                                                 send SecureAccept│
+    //    │                                                                  │
+    //    │      recv SecureReject      ┌────────────┐                       │
+    //    └─────────────────────────────┤SelfAccepted◄───────────────────────┘
+    //                                  └─────┬──────┘
+    // ┌───────┐    recv SecureFinalize       │
+    // │Secured◄──────────────────────────────┘
+    // └───────┘
     public enum State {
-        Insecure,
-        SelfInitialized,
-        BothInitialized,
+        Insecure, // Starting state
+        Requested,
+        SelfAccepted,
         Secured,
     }
     public enum PreferredMode : byte {
@@ -19,10 +53,11 @@ public class SecurityAgent {
     }
 
     public PreferredMode preferredMode;
-    State state; // Write via mutex
+    volatile State state; // Write via mutex
     AsymmetricContainer keyStore;
-    byte[]? aesKey; // Write via mutex
+    volatile byte[]? aesKey; // Write via mutex
     SemaphoreSlim mutex;
+    volatile bool whitelistEnabled;
 
     public SecurityAgent(AsymmetricContainer keyStore) {
         this.state = State.Insecure;
@@ -30,28 +65,31 @@ public class SecurityAgent {
         this.keyStore = keyStore;
         this.aesKey = null;
         this.mutex = new SemaphoreSlim(1);
+        this.whitelistEnabled = false;
     }
 
     public bool IsSecured => state == State.Secured;
 
     public bool CanStartSecuring() => state == State.Insecure;
-    public bool CanFinishSecuring() => state == State.SelfInitialized;
+    public bool CanFinishSecuring() => state == State.Requested;
     public bool CanAcceptSecuring() => state == State.Insecure;
     public byte[] GetPubRsaKey() => keyStore.GetOwnPubKey();
 
     // TODO rework start/finish/accept securing with returning a message maybe?
 
-    // To be used on requestor side
-    public async Task<bool> StartSecuring(CancellationToken cancellationToken) {
-        return await RunLocked(() => InitSelfRsa(), cancellationToken);
+    // To be used on requesting side
+    // Returns a Message to send if securing has started
+    public async Task<Message?> StartSecuring(CancellationToken cancellationToken) {
+        return await RunLocked(() => StartSecuringInternal(), cancellationToken);
     }
     public async Task<bool> FinishSecuring(byte[] encryptedAesKey, CancellationToken cancellationToken) {
-        return await RunLocked(() => InitAesRsaEncrypted(encryptedAesKey), cancellationToken);    
+        return await RunLocked(() => FinishSecuringInternal(encryptedAesKey), cancellationToken);    
     }
 
-    // To be used on requestee side
-    public async Task<bool> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
-        return await RunLocked(() => InitAesWithRsaPubKey(otherPubKey), cancellationToken);
+    // To be used on requested side
+    // Returns a Message to send in response (either a SecureAccept or SecureReject)
+    public async Task<Message> AcceptSecuring(byte[] otherPubKey, CancellationToken cancellationToken) {
+        return await RunLocked(() => AcceptSecuringInternal(otherPubKey), cancellationToken);
     }
 
     public async Task CancelSecuring(CancellationToken cancellationToken) {
@@ -75,17 +113,16 @@ public class SecurityAgent {
     }
 
     // Requires lock
-    protected bool InitSelfRsa() {
+    protected Message? StartSecuringInternal() {
         if (CanStartSecuring()) {
-            //rsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
-            state = State.SelfInitialized;
-            return true;
+            state = State.Requested;
+            return new SecureRequest(GetPubRsaKey());
         }
-        return false;
+        return null;
     }
 
     // Requires lock
-    protected bool InitAesRsaEncrypted(byte[] encryptedAes) {
+    protected bool FinishSecuringInternal(byte[] encryptedAes) {
         if (CanFinishSecuring()) {
             aesKey = keyStore.Decrypt(encryptedAes);
             state = State.Secured;
@@ -95,9 +132,12 @@ public class SecurityAgent {
     }
 
     // Requires lock
-    protected bool InitAesWithRsaPubKey(byte[] otherPubKey) {
+    protected Message AcceptSecuringInternal(byte[] otherPubKey) {
         if (!CanAcceptSecuring()) {
-            return false;
+            return SecureReject.WrongState;
+        }
+        if (whitelistEnabled && !keyStore.PubKeyKnown(otherPubKey)) {
+            return SecureReject.NotInWhitelist;
         }
 
         var otherRsa = RSA.Create(Defines.Constants.RSA_KEY_SIZE);
@@ -109,7 +149,7 @@ public class SecurityAgent {
         }
 
         state = State.Secured;
-        return true;
+        return new SecureAccept(otherPubKey, aesKey);
     }
 
     protected async Task RunLocked(Action toRun, CancellationToken cancellationToken) {

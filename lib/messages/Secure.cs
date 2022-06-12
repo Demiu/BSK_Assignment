@@ -72,7 +72,7 @@ public class SecureReject : Message
     public SecureRejectReasonKind Reason { get; protected set;}
     public override MessageKind Kind => MessageKind.SecureReject;
 
-    public static SecureReject AlreadySecured = new SecureReject(SecureRejectReasonKind.AlreadySecured);
+    public static SecureReject WrongState = new SecureReject(SecureRejectReasonKind.WrongState);
     public static SecureReject NotInWhitelist = new SecureReject(SecureRejectReasonKind.NotInWhitelist);
 
     protected SecureReject(SecureRejectReasonKind reason) {

@@ -58,9 +58,11 @@ public class Connection {
         var token = cancelTokenSource.Token;
         // TODO early return securityAgent.CanStartSecuring()
         Util.TaskRunSafe(async () => {
-            if (securityAgent.CanStartSecuring() && await securityAgent.StartSecuring(token)) {
-                var pub = securityAgent.GetPubRsaKey();
-                await SendMessage(new SecureRequest(pub));
+            if (securityAgent.CanStartSecuring()) {
+                var msg = await securityAgent.StartSecuring(token);
+                if (msg != null) {
+                    await SendMessage(msg);
+                }
             }
         });
     }
@@ -157,16 +159,21 @@ public class Connection {
                 await Console.Out.WriteLineAsync("Rejected: Can't start securing");
                 return;
             }
-            if (!await securityAgent.AcceptSecuring(msg.publicKey, token)) {
-                await Task.WhenAll(
-                    Console.Out.WriteLineAsync("Rejected: null return from AcceptSecuring"),
-                    SendMessageUnsecured(SecureReject.AlreadySecured)
-                );
-                return;
+            var outMsg = await securityAgent.AcceptSecuring(msg.publicKey, token);
+
+            string logResult;
+            if (outMsg is SecureReject) {
+                var outMsgRej = (SecureReject)outMsg;
+                logResult = $"Rejected securing: {outMsgRej.Reason.ToString()}";
+            } else if (outMsg is SecureAccept) {
+                logResult = "Accepted securing";
+            } else { 
+                throw new InvalidOperationException("SecurityAgent.AcceptSecuring returned an unknown type");
             }
+
             await Task.WhenAll(
-                Console.Out.WriteLineAsync("Accepted"),
-                SendMessageUnsecured(new SecureAccept(msg.publicKey, securityAgent.GetAesKey()))
+                Console.Out.WriteLineAsync(logResult),
+                SendMessageUnsecured(outMsg)
             );
         });
     }

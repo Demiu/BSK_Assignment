@@ -64,4 +64,17 @@ public class AsymmetricContainer {
             return 0;
         }
     }
+
+    public bool PubKeyKnown(byte[] pub) {
+        foreach (var rsa in knownPublicKeys) {
+            var knownPub = rsa.ExportRSAPublicKey();
+            if (knownPub.Length != pub.Length) {
+                continue;
+            }
+            if (knownPub.SequenceEqual(pub)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

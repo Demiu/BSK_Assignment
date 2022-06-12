@@ -91,7 +91,7 @@ public class Connection {
             MessageKind.SecureRequest => await SecureRequest.Deserialize(stream),
             MessageKind.SecureAccept => await SecureAccept.Deserialize(stream),
             MessageKind.SecureReject => await SecureReject.Deserialize(stream),
-            MessageKind.SecuredMessage => await SecuredMessage.Deserialize(stream),
+            MessageKind.SecuredMessageCBC => await SecuredMessageCBC.Deserialize(stream),
             MessageKind.DirectoryRequest => await DirectoryRequest.Deserialize(stream),
             MessageKind.AnnounceDirectoryEntry => await AnnounceDirectoryEntry.Deserialize(stream),
             MessageKind.TransferRequest => await TransferRequest.Deserialize(stream),
@@ -119,10 +119,10 @@ public class Connection {
     }
 
     protected async Task SendMessageSecured(Message msg) {
-        if (msg is SecuredMessage) {
+        if (msg is SecuredMessageCBC) {
             await Task.WhenAll(
                 Console.Out.WriteLineAsync(
-                    "Attmpted to secure send a message that's already a SecuredMessage"),
+                    "Attmpted to secure send a message that's already a SecuredMessageCBC"),
                 SendMessageUnsecured(msg)
             );
             return;
@@ -208,8 +208,8 @@ public class Connection {
         Console.WriteLine($"{msg.entryPath} is {msg.fileSystemType} ");
     }
     
-    protected void HandleMessage(SecuredMessage msg) {
-        Console.WriteLine("Received SecuredMessage");
+    protected void HandleMessage(SecuredMessageCBC msg) {
+        Console.WriteLine("Received SecuredMessageCBC");
         var token = cancelTokenSource.Token;
         var key = securityAgent.GetAesKey();
         if (key != null) {

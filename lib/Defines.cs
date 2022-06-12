@@ -20,12 +20,13 @@ public enum MessageKind: byte {
     SecureRequest = 2,
     SecureAccept = 3,
     SecureReject = 4,
-    SecuredMessage = 5,
-    DirectoryRequest = 6,
-    AnnounceDirectoryEntry = 7,
-    TransferRequest = 8,
-    AnnounceTransfer = 9,
-    TransferChunk = 10,
+    SecuredMessageCBC = 5,
+    SecuredMessageECB = 6,
+    DirectoryRequest = 7,
+    AnnounceDirectoryEntry = 8,
+    TransferRequest = 9,
+    AnnounceTransfer = 10,
+    TransferChunk = 11,
 }
 
 public enum SecureRejectReasonKind: byte {

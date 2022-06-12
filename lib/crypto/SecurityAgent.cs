@@ -56,11 +56,11 @@ public class SecurityAgent {
         return aesKey;
     }
 
-    public SecuredMessage? TrySecureMessage(Message toSecure) {
+    public SecuredMessageCBC? TrySecureMessage(Message toSecure) {
         if (state != State.Secured) {
             return null;
         }
-        return new SecuredMessage(toSecure, aesKey!);
+        return new SecuredMessageCBC(toSecure, aesKey!);
     }
 
     // Requires lock

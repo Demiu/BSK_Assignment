@@ -30,9 +30,9 @@ public class MainWindowViewModel : ViewModelBase
 
     private string[] extensions = {"txt", "pdf", "png", "avi"};
     private string[] extensionsName = {"All filtered files"};
-    private string whitelistFilename;
-    private string publicKeyFilename;
-    private string privateKeyFilename;
+    //private string whitelistFilename;
+    //private string publicKeyFilename;
+    //private string privateKeyFilename;
 
     public async void JoinClicked(MainWindow window) {
         HostJoinEnabled = false;
@@ -42,7 +42,7 @@ public class MainWindowViewModel : ViewModelBase
             await Console.Out.WriteLineAsync("IP/Port not valid");
             return;
         }
-        var cts = new CancellationTokenSource(1000);
+        var cts = new CancellationTokenSource();
         var connection = await Lib.Connection.CreateTo(ep, cts.Token);
         if (connection == null) {
             await Console.Out.WriteLineAsync("Failed to connect");

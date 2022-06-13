@@ -45,8 +45,8 @@
                 <TreeDataTemplate ItemsSource="{Binding Subfolders}">
                     <Canvas>
                         <!-- <TextBlock Name="FilenameText" Text="{Binding strNodeText}" DoubleTapped="strNodeText_DoubleTapped" -->
-                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}"
-                                   Width="175" Height="20"/>    
+                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}"/>
+                                   <!-- Width="175" Height="20"/>     -->
                     </Canvas>
                 </TreeDataTemplate>
             </TreeView.ItemTemplate>

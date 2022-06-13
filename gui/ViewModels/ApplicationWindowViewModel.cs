@@ -8,17 +8,14 @@ public class ApplicationWindowViewModel : ViewModelBase
 {
     Lib.Connection connection;
 
-    //public ObservableCollection<Node> Items { get; }
+    public ObservableCollection<Node> Items { get; }
     //public string strFolder { get; }
 
     public ApplicationWindowViewModel(Lib.Connection connection) {
         this.connection = connection;
-        /*Items = new ObservableCollection<Node>();
-
-        Node rootNode = new Node(strFolder);
-        rootNode.Subfolders = GetSubfolders(strFolder);
-
-        Items.Add(rootNode);*/
+        this.Items = new(){
+            new Node("/", connection.RemoteEndPoint!.ToString()!)
+        };
     }
     
     /*public ObservableCollection<Node> GetSubfolders(string strPath) {
@@ -43,7 +40,7 @@ public class ApplicationWindowViewModel : ViewModelBase
         }
 
         return subfolders;
-    }
+    }*/
 
     public class Node
     {
@@ -52,9 +49,14 @@ public class ApplicationWindowViewModel : ViewModelBase
         public string strNodeText { get; }
         public string strFullPath { get; }
 
-        public Node(string _strFullPath) {
-            strFullPath = _strFullPath;
-            strNodeText = Path.GetFileName(_strFullPath);
+        public Node(string fullPath)
+        : this(fullPath, Path.GetFileName(fullPath))
+        { }
+
+        public Node(string fullPath, string nodeText) {
+            this.Subfolders = new();
+            this.strFullPath = fullPath;
+            this.strNodeText = nodeText;
         }
-    }*/
+    }
 }

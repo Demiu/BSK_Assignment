@@ -15,6 +15,8 @@ public class Connection {
     FileSystemAgent fsAgent;
     //bool canSendFiles; // TODO
 
+    public EndPoint? RemoteEndPoint => client.Client.RemoteEndPoint;
+
     public Connection(TcpClient client, FileSystemAgent fsAgent, CancellationToken token)
     : this(client, fsAgent, token, new())
     { }
@@ -29,7 +31,7 @@ public class Connection {
     public static async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
         var client = new TcpClient();
         try {
-            await client.ConnectAsync(destination);
+            await client.ConnectAsync(destination); // TODO timeout
         }
         catch (System.Exception e) {
             await Console.Out.WriteLineAsync($"Connection.CreateTo ConnectAsync fail: {e}");

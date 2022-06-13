@@ -11,7 +11,8 @@ public class ApplicationWindowViewModel : ViewModelBase
     //public ObservableCollection<Node> Items { get; }
     //public string strFolder { get; }
 
-    public ApplicationWindowViewModel() {
+    public ApplicationWindowViewModel(Lib.Connection connection) {
+        this.connection = connection;
         /*Items = new ObservableCollection<Node>();
 
         Node rootNode = new Node(strFolder);

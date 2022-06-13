@@ -50,9 +50,21 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        //var newWindow = new ApplicationWindow();
-        //newWindow.Show();
-        //window.Close();
+        var newWindow = new ApplicationWindow {
+            DataContext = new ApplicationWindowViewModel(connection),
+        };
+        newWindow.Show();
+        window.Close();
+
+        Lib.Util.TaskRunSafe(async () => {
+            try {
+                await connection.CommunicationLoop();
+            }
+            //catch (System.Exception) { }
+            finally {
+                // TODO close newWindow
+            }
+        });
     }
 
     protected IPAddress? GetIpAddress() {

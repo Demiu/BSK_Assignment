@@ -16,8 +16,6 @@ public partial class ApplicationWindow : Window
     
     public ApplicationWindow() {
         InitializeComponent();
-        //DataContext = new ApplicationWindowViewModel();
-        //fileNum = 0;
     }/*
 
     protected void Txt_KeyUp(object sender, KeyEventArgs e)

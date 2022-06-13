@@ -44,7 +44,8 @@
             <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Subfolders}">
                     <Canvas>
-                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}" DoubleTapped="strNodeText_DoubleTapped"
+                        <!-- <TextBlock Name="FilenameText" Text="{Binding strNodeText}" DoubleTapped="strNodeText_DoubleTapped" -->
+                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}"
                                    Width="175" Height="20"/>    
                     </Canvas>
                 </TreeDataTemplate>
@@ -63,10 +64,12 @@
         <TextBox Name="SendText" Height="260" Width="265" Margin="0,80,80,0" Background="White" Text="" VerticalAlignment="Top"
                  HorizontalAlignment="Center" IsReadOnly="True" TextWrapping="Wrap" />
         <TextBox Name="MessagesText" Height="60" Width="550" Margin="0,165,20,0" Background="White" Watermark="Text" VerticalAlignment="Center"
-                 HorizontalAlignment="Right" KeyUp="Txt_KeyUp" TextWrapping="Wrap" />
+                 HorizontalAlignment="Right" TextWrapping="Wrap" />
+                 <!-- HorizontalAlignment="Right" KeyUp="Txt_KeyUp" TextWrapping="Wrap" /> -->
         <Button Name="MessageButton" Width="150" Margin="200,270,0,0" Content="Send Message" Background="White" VerticalAlignment="Center"
                 HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
-                HorizontalContentAlignment="Center" IsEnabled="False" Click="Click_SendMessage"/>
+                HorizontalContentAlignment="Center" IsEnabled="False" />
+                <!-- HorizontalContentAlignment="Center" IsEnabled="False" Click="Click_SendMessage"/> -->
         
         <!-- Transfer list for files and folders with ProgressBar --> 
         <TextBlock Name="File1Text" Text="File1" Width="200" Margin="450,80,0,0" VerticalAlignment="Top"

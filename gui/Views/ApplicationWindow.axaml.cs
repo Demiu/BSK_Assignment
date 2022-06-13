@@ -9,30 +9,29 @@ namespace Gui.Views;
 
 public partial class ApplicationWindow : Window
 {
-    private string message;
+    /*private string message;
     private string filename;
     private int fileNum;
-    private bool start = true;
+    private bool start = true;*/
     
     public ApplicationWindow() {
         InitializeComponent();
-        DataContext = new ApplicationWindowViewModel();
-        fileNum = 0;
-    }
+        //DataContext = new ApplicationWindowViewModel();
+        //fileNum = 0;
+    }/*
 
     protected void Txt_KeyUp(object sender, KeyEventArgs e)
     {
-        message = MessagesText.Text;
-        MessageButton.IsEnabled = message.Length > 0;
+        //message = MessagesText.Text;
+        //MessageButton.IsEnabled = message.Length > 0;
     }
 
     protected void Click_SendMessage(object sender, RoutedEventArgs args) {
-        SendText.Text += message + "\n";
-        LogsText.Text += message + "\n";
+        //SendText.Text += message + "\n";
+        //LogsText.Text += message + "\n";
     }
 
     protected void strNodeText_DoubleTapped(object sender, RoutedEventArgs e) {
-        
         if (start) {
             
             TextBlock textBlock = (sender as TextBlock);
@@ -111,7 +110,5 @@ public partial class ApplicationWindow : Window
         if (e.ProgressPercentage >= 99) {
             start = true;
         }
-    }
-    
-
+    }*/
 }

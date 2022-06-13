@@ -42,12 +42,10 @@
                    TextAlignment="Center" />
         
         <!-- Setting up the ip and port -->
-        <TextBox Name="TextIp" Width="150" Margin="0,100,200,0" Background="White" Watermark="{Binding ipWatermark}" VerticalAlignment="Top"
-                 HorizontalAlignment="Center" />
-                 <!-- HorizontalAlignment="Center" KeyUp="Txt_KeyUpIp"/> -->
-        <TextBox Name="TextPort" Width="80" Margin="200,100,0,0" Background="White" Watermark="Port" VerticalAlignment="Top"
-                 HorizontalAlignment="Center" />
-                 <!-- HorizontalAlignment="Center" KeyUp="Txt_KeyUpIp"/> -->
+        <TextBox Name="TextIp" Width="150" Margin="0,100,200,0" Background="White" VerticalAlignment="Top" HorizontalAlignment="Center"
+                 Watermark="{Binding IpWatermark}" Text="{Binding IpString}" />
+        <TextBox Name="TextPort" Width="80" Margin="200,100,0,0" Background="White" VerticalAlignment="Top" HorizontalAlignment="Center"
+                 Watermark="{Binding PortWatermark}" Text="{Binding PortString}" />
         
         <!-- Setting up a whitelist -->
         <Button Name="ChooseWhitelistButton" Width="150" Margin="0,170,360,0" Content="Choose Whitelist" Background="White" VerticalAlignment="Top"
@@ -76,6 +74,8 @@
         <TextBlock Name="PublicKeyFile" Text="" Width="200" Margin="190,125,0,0" 
                    Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" 
                    FontStyle="Normal" FontSize="12" TextAlignment="Center"/>
+
+        <!-- Importing public and private keys -->
         <Button Name="PrivateKeyButton" Width="150" Margin="0,250,150,0" Content="Choose Private Key" Background="White" VerticalAlignment="Center"
                 HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
@@ -84,7 +84,7 @@
                    Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" 
                    FontStyle="Normal" FontSize="12" TextAlignment="Center"/>
         
-        <!-- Importing public and private keys -->
+        <!-- Hosting/Joining /> -->
         <Button Name="HostButton" Width="100" Margin="200,0,0,40" Content="Host" Background="White" VerticalAlignment="Bottom"
                 HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
                 HorizontalContentAlignment="Center" />

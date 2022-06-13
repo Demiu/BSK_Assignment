@@ -1,16 +1,22 @@
-﻿namespace Gui.ViewModels;
+﻿using ReactiveUI;
+
+namespace Gui.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private string ipString = "";
-    //private static readonly string ipWatermark = "0.0.0.0";//Lib.Defines.Constants.DEFAULT_ADDRESS.ToString();
-    public string IpWatermark {
-        get => "lol";
-        set {
-            ipString = value;
-        }
+    string ipString = "";
+    public string IpString {
+        get => ipString;
+        set => this.RaiseAndSetIfChanged(ref ipString, value);
     }
-    private string port;
+    public string IpWatermark => Lib.Defines.Constants.DEFAULT_ADDRESS.ToString();
+
+    string portString = "";
+    public string PortString {
+        get => portString;
+        set => this.RaiseAndSetIfChanged(ref portString, value);
+    }
+    public string PortWatermark => Lib.Defines.Constants.DEFAULT_PORT.ToString();
 
     private string[] extensions = {"txt", "pdf", "png", "avi"};
     private string[] extensionsName = {"All filtered files"};

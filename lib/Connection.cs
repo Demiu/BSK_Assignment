@@ -28,7 +28,13 @@ public class Connection {
 
     public static async Task<Connection?> CreateTo(IPEndPoint destination, CancellationToken cancellationToken) {
         var client = new TcpClient();
-        await client.ConnectAsync(destination);
+        try {
+            await client.ConnectAsync(destination);
+        }
+        catch (System.Exception e) {
+            await Console.Out.WriteLineAsync($"Connection.CreateTo ConnectAsync fail: {e}");
+            return null;
+        }
         if (client.Connected) {
             return new Connection(client, new(), cancellationToken);
         } else {

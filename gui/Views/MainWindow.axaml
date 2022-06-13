@@ -90,10 +90,7 @@
                 HorizontalContentAlignment="Center" />
                 <!-- Click="Click_Host" IsEnabled="False" /> -->
         <Button Name="JoinButton" Width="100" Margin="0,0,200,40" Content="Join" Background="White" VerticalAlignment="Bottom"
-                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
-                HorizontalContentAlignment="Center"
-                IsEnabled="False" />
-                <!-- Click="Click_Join" IsEnabled="False" /> -->
-        
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14" HorizontalContentAlignment="Center"
+                Command="{Binding JoinClicked}" CommandParameter="{Binding $parent[Window]}" IsEnabled="{Binding HostJoinEnabled}" />
     </Panel> 
 </Window>

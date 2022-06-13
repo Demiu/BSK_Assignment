@@ -6,22 +6,21 @@ namespace Gui.ViewModels;
 
 public class ApplicationWindowViewModel : ViewModelBase
 {
-    public ObservableCollection<Node> Items { get; }
-    public string strFolder { get; }
+    Lib.Connection connection;
+
+    //public ObservableCollection<Node> Items { get; }
+    //public string strFolder { get; }
 
     public ApplicationWindowViewModel() {
-        // TODO: to be removed, because it must be at the start /
-        strFolder = @"D:\INFA\Rider\BSK_2\cli\bin\Debug\net6.0"; 
-
-        Items = new ObservableCollection<Node>();
+        /*Items = new ObservableCollection<Node>();
 
         Node rootNode = new Node(strFolder);
         rootNode.Subfolders = GetSubfolders(strFolder);
 
-        Items.Add(rootNode);
+        Items.Add(rootNode);*/
     }
     
-    public ObservableCollection<Node> GetSubfolders(string strPath) {
+    /*public ObservableCollection<Node> GetSubfolders(string strPath) {
         ObservableCollection<Node> subfolders = new ObservableCollection<Node>();
         string[] subdirs = Directory.GetFileSystemEntries(strPath, "*", SearchOption.TopDirectoryOnly);
 
@@ -56,6 +55,5 @@ public class ApplicationWindowViewModel : ViewModelBase
             strFullPath = _strFullPath;
             strNodeText = Path.GetFileName(_strFullPath);
         }
-    }
-
+    }*/
 }

@@ -1,8 +1,7 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace gui.Views;
+namespace Gui.Views;
 
 public partial class HostedServerWindow : Window
 {

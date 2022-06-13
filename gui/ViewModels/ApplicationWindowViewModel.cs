@@ -2,9 +2,9 @@
 using System.Collections.ObjectModel;
 using System.IO;
 
-namespace gui.ViewModels;
+namespace Gui.ViewModels;
 
-public class ApplicationWindowViewModel
+public class ApplicationWindowViewModel : ViewModelBase
 {
     public ObservableCollection<Node> Items { get; }
     public string strFolder { get; }

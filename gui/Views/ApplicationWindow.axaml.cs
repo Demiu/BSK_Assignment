@@ -3,9 +3,9 @@ using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using gui.ViewModels;
+using Gui.ViewModels;
 
-namespace gui.Views;
+namespace Gui.Views;
 
 public partial class ApplicationWindow : Window
 {

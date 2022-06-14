@@ -39,15 +39,15 @@
         
         <!-- Directory tree --> 
         <TreeView Items="{Binding Items}" 
-                  Width="175" Height="520" Margin="20, 40,20,40" Background="White"
+                  Width="175" Height="520" Margin="20,40,20,40" Background="White"
                   HorizontalAlignment="Left" FontSize="10">
             <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Subfolders}">
-                    <TextBlock Name="FilenameText" Text="{Binding strNodeText}">
+                    <TextBlock Name="FilenameText" Text="{Binding strNodeText}" Foreground="{Binding textColor}">
                         <TextBlock.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Explore" IsEnabled="{Binding IsFolder}"/>
-                                <MenuItem Header="Download"/>
+                                <MenuItem Header="Explore" IsEnabled="{Binding IsFolder}" Command="{Binding ExploreClicked}"/>
+                                <MenuItem Header="Download" Command="{Binding DownloadClicked}"/>
                             </ContextMenu>
                         </TextBlock.ContextMenu>
                     </TextBlock>

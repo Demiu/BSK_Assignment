@@ -13,7 +13,7 @@ public class Connection {
     CancellationTokenSource cancelTokenSource;
     Crypto.SecurityAgent securityAgent;
     FileSystemAgent fsAgent;
-    //bool canSendFiles; // TODO
+    public Action<string, FileSystemKind>? OnNewDirectoryEntry {get; set;}
 
     public EndPoint? RemoteEndPoint => client.Client.RemoteEndPoint;
 
@@ -251,7 +251,10 @@ public class Connection {
     
     protected void HandleMessage(AnnounceDirectoryEntry msg) {
         Console.WriteLine("Received AnnounceDirectoryEntry");
-        Console.WriteLine($"{msg.entryPath} is {msg.fileSystemType} ");
+        //Console.WriteLine($"{msg.entryPath} is {msg.fileSystemType} ");
+        if (OnNewDirectoryEntry != null) {
+            OnNewDirectoryEntry(msg.entryPath, msg.fileSystemType);
+        }
     }
     
     protected void HandleMessage(SecuredMessageCBC msg) {

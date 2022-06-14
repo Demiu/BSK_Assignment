@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace Gui.ViewModels;
 
@@ -15,51 +19,72 @@ public class ApplicationWindowViewModel : ViewModelBase
     public ApplicationWindowViewModel(Lib.Connection connection) {
         this.connection = connection;
         this.Items = new(){
-            new Node(Lib.Defines.Constants.BASE_NET_PATH, connection.RemoteEndPoint!.ToString()!, true)
+            new Node(this, Lib.Defines.Constants.BASE_NET_PATH, connection.RemoteEndPoint!.ToString()!, true)
         };
+
+        connection.OnNewDirectoryEntry += NewDirectoryEntryCallback;
     }
-    
-    /*public ObservableCollection<Node> GetSubfolders(string strPath) {
-        ObservableCollection<Node> subfolders = new ObservableCollection<Node>();
-        string[] subdirs = Directory.GetFileSystemEntries(strPath, "*", SearchOption.TopDirectoryOnly);
 
-        foreach (string dir in subdirs) {
-            Node thisnode = new Node(dir);
-            
-            try 
-            {
-                if (Directory.GetFileSystemEntries(dir, "*", SearchOption.TopDirectoryOnly).Length > 0) {
-                    thisnode.Subfolders = new ObservableCollection<Node>();
-                    thisnode.Subfolders = GetSubfolders(dir);
-                }
-            }
-            catch (Exception error) {
-                // ignored
-            }
+    public void NewDirectoryEntryCallback(string path, Lib.Defines.FileSystemKind kind) {
+        Items[0].AddEntry(path, path.PathGetSegments(), kind);
+    }
 
-            subfolders.Add(thisnode);
-        }
+    public void Explore(string path) {
+        connection.GetFileDirectory(path);
+    }
 
-        return subfolders;
-    }*/
+    public void Download(string path) {
+        connection.RequestFile(path);
+    }
 
     public class Node
     {
-        public ObservableCollection<Node> Subfolders { get; set; }
+        ApplicationWindowViewModel vm;
 
+        public ObservableCollection<Node> Subfolders { get; set; }
         public string strNodeText { get; }
         public string strFullPath { get; }
         public bool isFolder { get; }
+        public IBrush textColor => 
+            isFolder 
+            ? new ImmutableSolidColorBrush(Color.Parse("#3b719f"), 1) 
+            : new ImmutableSolidColorBrush(Color.Parse("#CB4C4E"), 1);
 
-        public Node(string fullPath, bool isFolder)
-        : this(fullPath, Path.GetFileName(fullPath), isFolder)
+        public Node(ApplicationWindowViewModel vm, string fullPath, bool isFolder)
+        : this(vm, fullPath, Path.GetFileName(fullPath), isFolder)
         { }
 
-        public Node(string fullPath, string nodeText, bool isFolder) {
+        public Node(ApplicationWindowViewModel vm, string fullPath, string nodeText, bool isFolder) {
+            this.vm = vm;
             this.Subfolders = new();
             this.strFullPath = fullPath;
             this.strNodeText = nodeText;
             this.isFolder = isFolder;
+        }
+
+        public void AddEntry(string fullPath, Stack<string> segments, Lib.Defines.FileSystemKind kind) {
+            var name = segments.Pop();
+            Node? found = null;
+            foreach (var item in Subfolders) {
+                if (item.strNodeText == name) {
+                    found = item;
+                }
+            }
+            if (found == null) {
+                found = new Node(vm, fullPath, kind == Lib.Defines.FileSystemKind.Directory);
+                Subfolders.Add(found);
+            }
+            if (segments.Count != 0) {
+                found.AddEntry(fullPath, segments, kind);
+            }
+        }
+
+        public void ExploreClicked() {
+            vm.Explore(strFullPath);
+        }
+
+        public void DownloadClicked() {
+            vm.Download(strFullPath);
         }
     }
 }

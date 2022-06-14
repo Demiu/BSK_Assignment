@@ -99,6 +99,7 @@ public class SecureFinalize : Message {
 public class SecureReject : Message
 {
     public SecureRejectReasonKind Reason { get; protected set;}
+    
     public override MessageKind Kind => MessageKind.SecureReject;
 
     public static SecureReject WrongState = new SecureReject(SecureRejectReasonKind.WrongState);

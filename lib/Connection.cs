@@ -14,7 +14,7 @@ public class Connection {
     Crypto.SecurityAgent securityAgent;
     FileSystemAgent fsAgent;
     public Action<string, FileSystemKind>? OnNewDirectoryEntry {get; set;}
-    public Action<TransferHandle>? OnNewTransfer {get; set;}
+    public Action<Transfer>? OnNewTransfer {get; set;}
 
     public EndPoint? RemoteEndPoint => client.Client.RemoteEndPoint;
 
@@ -297,7 +297,7 @@ public class Connection {
     }
 
     protected void HandleMessage(TransferChunk msg) {
-        Console.WriteLine("Received TransferChunk");
+        //Console.WriteLine("Received TransferChunk");
         fsAgent.ReceiveTransferChunk(msg.path, msg.chunk);
     }
 }

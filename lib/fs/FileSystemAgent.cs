@@ -73,7 +73,7 @@ public class FileSystemAgent {
         await Console.Out.WriteLineAsync($"Finished sending {requestedPath}");
     }
 
-    public TransferHandle? NewIncomingTransfer(string path, Int64 size) {
+    public Transfer? NewIncomingTransfer(string path, Int64 size) {
         path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!downloadDir.PathContainsSubPath(path)) {
             // TODO error out, file not in download path
@@ -88,7 +88,7 @@ public class FileSystemAgent {
             await ongoingTransfers[path].WriteLoop();
             // TODO remove transfer from ongoingTransfers THIS WILL MAKE IT CONCURRENT
         });
-        return new TransferHandle(transfer);
+        return transfer;
     }
 
     public void ReceiveTransferChunk(string path, byte[] chunk) {

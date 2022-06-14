@@ -37,45 +37,26 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         
-        <!-- Directory tree --> 
-        <TreeView Items="{Binding Items}" 
-                  Width="175" Height="520" Margin="20,40,20,40" Background="White"
-                  HorizontalAlignment="Left" FontSize="10">
-            <TreeView.ItemTemplate>
-                <TreeDataTemplate ItemsSource="{Binding Subfolders}">
-                    <TextBlock Name="FilenameText" Text="{Binding strNodeText}" Foreground="{Binding textColor}">
-                        <TextBlock.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Explore" IsEnabled="{Binding IsFolder}" Command="{Binding ExploreClicked}"/>
-                                <MenuItem Header="Download" Command="{Binding DownloadClicked}"/>
-                            </ContextMenu>
-                        </TextBlock.ContextMenu>
-                    </TextBlock>
-                </TreeDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-        
         <!-- Encryption mode selection --> 
-        <TextBlock Text="Choose Encoding:" Width="150" Margin="0,40,90,0" VerticalAlignment="Top"
+        <!-- <TextBlock Text="Choose Encoding:" Width="150" Margin="0,40,90,0" VerticalAlignment="Top"
                    HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="16" Foreground="White" TextAlignment="Center" />
         <RadioButton Name="EbcButton" Content="EBC" Margin="200,35,0,0" VerticalAlignment="Top"
                      HorizontalAlignment="Center" Foreground="White" IsChecked = "False" ></RadioButton>
         <RadioButton Name="CbcButton" Content="CBC" Margin="0,35,90,0" VerticalAlignment="Top"
-                     HorizontalAlignment="Right" Foreground="White" IsChecked = "True" ></RadioButton>
+                     HorizontalAlignment="Right" Foreground="White" IsChecked = "True" ></RadioButton> -->
         
         <!-- Controls for sending and reading messages -->        
-        <TextBox Name="SendText" Height="260" Width="265" Margin="0,80,80,0" Background="White" Text="" VerticalAlignment="Top"
+        <!-- <TextBox Name="SendText" Height="260" Width="265" Margin="0,80,80,0" Background="White" Text="" VerticalAlignment="Top"
                  HorizontalAlignment="Center" IsReadOnly="True" TextWrapping="Wrap" />
         <TextBox Name="MessagesText" Height="60" Width="550" Margin="0,165,20,0" Background="White" Watermark="Text" VerticalAlignment="Center"
                  HorizontalAlignment="Right" TextWrapping="Wrap" />
-                 <!-- HorizontalAlignment="Right" KeyUp="Txt_KeyUp" TextWrapping="Wrap" /> -->
+                 HorizontalAlignment="Right" KeyUp="Txt_KeyUp" TextWrapping="Wrap" />
         <Button Name="MessageButton" Width="150" Margin="200,270,0,0" Content="Send Message" Background="White" VerticalAlignment="Center"
                 HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
-                HorizontalContentAlignment="Center" IsEnabled="False" />
+                HorizontalContentAlignment="Center" IsEnabled="False" /> -->
                 <!-- HorizontalContentAlignment="Center" IsEnabled="False" Click="Click_SendMessage"/> -->
         
-        <!-- Transfer list for files and folders with ProgressBar --> 
-        <TextBlock Name="File1Text" Text="File1" Width="200" Margin="450,80,0,0" VerticalAlignment="Top"
+        <!-- <TextBlock Name="File1Text" Text="File1" Width="200" Margin="450,80,0,0" VerticalAlignment="Top"
                    HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
         <TextBlock Name="File2Text" Text="File2" Width="200" Margin="450,110,0,0" VerticalAlignment="Top"
                    HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="10" Foreground="White" />
@@ -119,12 +100,43 @@
                      MinWidth="40"></ProgressBar>
         <ProgressBar Name="ProgressBar9" Width="60" Margin="0,320,20,0" Background="LightBlue" VerticalAlignment="Top"
                      HorizontalAlignment="Right" FontWeight="Bold" FontStyle="Normal" FontSize="9" Value="0" ShowProgressText="True"
-                     MinWidth="40"></ProgressBar>
+                     MinWidth="40"></ProgressBar> -->
         
         <!-- TextBox for Logs -->
-        <TextBox Name="LogsText" Text="" Width="550" Height="100" Margin="0,0,20,40" 
+        <!-- <TextBox Name="LogsText" Text="" Width="550" Height="100" Margin="0,0,20,40" 
                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="White"
-                 TextWrapping="Wrap" IsReadOnly="True"/>
-        
+                 TextWrapping="Wrap" IsReadOnly="True"/> -->
+        <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.3*"></ColumnDefinition>
+            <ColumnDefinition Width="0.7*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+            <!-- Directory tree --> 
+            <TreeView Items="{Binding Directories}" Background="White" FontSize="10" Grid.Column="0" Grid.Row="0">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Subfolders}">
+                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}" Foreground="{Binding textColor}">
+                            <TextBlock.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Explore" IsEnabled="{Binding IsFolder}" Command="{Binding ExploreClicked}"/>
+                                    <MenuItem Header="Download" Command="{Binding DownloadClicked}"/>
+                                </ContextMenu>
+                            </TextBlock.ContextMenu>
+                        </TextBlock>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <!-- Transfer list for files and folders with ProgressBar --> 
+            <ListBox Items="{Binding Transfers}" Grid.Column="1" Grid.Row="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ProgressBar Width="100" ShowProgressText="True" Value="{Binding Value}" Maximum="100"/>
+                            <TextBlock Text="{Binding Name}" FontSize="10"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
     </Panel>
 </Window>

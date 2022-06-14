@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Gui.Models;
 
 namespace Gui.ViewModels;
 
@@ -13,20 +14,27 @@ public class ApplicationWindowViewModel : ViewModelBase
 {
     Lib.Connection connection;
 
-    public ObservableCollection<Node> Items { get; }
+    public ObservableCollection<Node> Directories { get; }
+    public ObservableCollection<FileTransferModel> Transfers { get; }
     //public string strFolder { get; }
 
     public ApplicationWindowViewModel(Lib.Connection connection) {
         this.connection = connection;
-        this.Items = new(){
+        this.Directories = new(){
             new Node(this, Lib.Defines.Constants.BASE_NET_PATH, connection.RemoteEndPoint!.ToString()!, true)
         };
+        this.Transfers = new();
 
         connection.OnNewDirectoryEntry += NewDirectoryEntryCallback;
+        connection.OnNewTransfer += NewTransferCallback;
     }
 
     public void NewDirectoryEntryCallback(string path, Lib.Defines.FileSystemKind kind) {
-        Items[0].AddEntry(path, path.PathGetSegments(), kind);
+        Directories[0].AddEntry(path, path.PathGetSegments(), kind);
+    }
+
+    public void NewTransferCallback(Lib.Fs.Transfer handle) {
+        Transfers.Add(new FileTransferModel(handle));
     }
 
     public void Explore(string path) {

@@ -34,6 +34,33 @@ public class MainWindowViewModel : ViewModelBase
     //private string publicKeyFilename;
     //private string privateKeyFilename;
 
+    public async void HostClicked(MainWindow window) {
+        HostJoinEnabled = false;
+
+        var ep = GetIPEndPoint();
+        if (ep == null) {
+            await Console.Out.WriteLineAsync("IP/Port not valid");
+            return;
+        }
+        var server = new Lib.Server(ep);
+
+        var newWindow = new HostedServerWindow {
+            DataContext = new HostedServerWindowViewModel(server),
+        };
+        newWindow.Show();
+        window.Close();
+
+        Lib.Util.TaskRunSafe(async () => {
+            try {
+                await server.ListenLoop();
+            }
+            //catch (System.Exception) { }
+            finally {
+                // TODO close newWindow
+            }
+        });
+    }
+
     public async void JoinClicked(MainWindow window) {
         HostJoinEnabled = false;
 

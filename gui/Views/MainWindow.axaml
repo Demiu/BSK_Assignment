@@ -86,9 +86,8 @@
         
         <!-- Hosting/Joining /> -->
         <Button Name="HostButton" Width="100" Margin="200,0,0,40" Content="Host" Background="White" VerticalAlignment="Bottom"
-                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14"
-                HorizontalContentAlignment="Center" />
-                <!-- Click="Click_Host" IsEnabled="False" /> -->
+                HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14" HorizontalContentAlignment="Center"
+                Command="{Binding HostClicked}" CommandParameter="{Binding $parent[Window]}" IsEnabled="{Binding HostJoinEnabled}" />
         <Button Name="JoinButton" Width="100" Margin="0,0,200,40" Content="Join" Background="White" VerticalAlignment="Bottom"
                 HorizontalAlignment="Center" FontWeight="Bold" FontStyle="Normal" FontSize="14" HorizontalContentAlignment="Center"
                 Command="{Binding JoinClicked}" CommandParameter="{Binding $parent[Window]}" IsEnabled="{Binding HostJoinEnabled}" />

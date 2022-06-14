@@ -10,6 +10,7 @@ public class Server : IDisposable
     List<Connection> connections;
     CancellationTokenSource cancelTokenSource;
     FileSystemAgent fsAgent;
+    public Action<Connection>? OnNewConnection {get; set;}
 
     public Server(IPEndPoint endPoint) {
         listener = new TcpListener(endPoint);
@@ -60,6 +61,9 @@ public class Server : IDisposable
         Console.WriteLine($"New client connected");
         var connection = new Connection(client, fsAgent, cancelTokenSource.Token);
         connections.Add(connection);
+        if (OnNewConnection != null) {
+            OnNewConnection(connection);
+        }
         Util.TaskRunSafe(() => connection.CommunicationLoop()); // TODO handleconnectionclosed, remove connection on completion
     }
 

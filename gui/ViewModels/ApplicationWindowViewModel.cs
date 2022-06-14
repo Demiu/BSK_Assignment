@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using Avalonia.Interactivity;
 
 namespace Gui.ViewModels;
 
@@ -14,7 +15,7 @@ public class ApplicationWindowViewModel : ViewModelBase
     public ApplicationWindowViewModel(Lib.Connection connection) {
         this.connection = connection;
         this.Items = new(){
-            new Node("/", connection.RemoteEndPoint!.ToString()!)
+            new Node(Lib.Defines.Constants.BASE_NET_PATH, connection.RemoteEndPoint!.ToString()!, true)
         };
     }
     
@@ -48,15 +49,17 @@ public class ApplicationWindowViewModel : ViewModelBase
 
         public string strNodeText { get; }
         public string strFullPath { get; }
+        public bool isFolder { get; }
 
-        public Node(string fullPath)
-        : this(fullPath, Path.GetFileName(fullPath))
+        public Node(string fullPath, bool isFolder)
+        : this(fullPath, Path.GetFileName(fullPath), isFolder)
         { }
 
-        public Node(string fullPath, string nodeText) {
+        public Node(string fullPath, string nodeText, bool isFolder) {
             this.Subfolders = new();
             this.strFullPath = fullPath;
             this.strNodeText = nodeText;
+            this.isFolder = isFolder;
         }
     }
 }

@@ -12,7 +12,7 @@ public class Constants {
     public static readonly RSAEncryptionPadding RSA_PADDING_TYPE = RSAEncryptionPadding.OaepSHA1;
     public static readonly HashAlgorithmName SIGNING_HASH_ALGO = HashAlgorithmName.SHA256;
     public static readonly RSASignaturePadding SIGNING_PADDING_TYPE = RSASignaturePadding.Pkcs1;
-    public const string DEFAULT_PATH = "/";
+    public const string BASE_NET_PATH = "/";
     public const Int32 FILE_TRANSFER_CHUNK_SIZE = 1024;
 }
 

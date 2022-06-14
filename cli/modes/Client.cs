@@ -21,7 +21,7 @@ class ClientMode : Mode
     Connection connection;
     CancellationTokenSource ctSource;
     Dictionary<string, Action<ArraySegment<string>>> functionsVal;
-    string currentPath = Lib.Defines.Constants.DEFAULT_PATH;
+    string currentPath = Lib.Defines.Constants.BASE_NET_PATH;
 
     public ClientMode(Connection connection, CancellationTokenSource source) {
         this.connection = connection;

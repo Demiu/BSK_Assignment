@@ -43,11 +43,14 @@
                   HorizontalAlignment="Left" FontSize="10">
             <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Subfolders}">
-                    <Canvas>
-                        <!-- <TextBlock Name="FilenameText" Text="{Binding strNodeText}" DoubleTapped="strNodeText_DoubleTapped" -->
-                        <TextBlock Name="FilenameText" Text="{Binding strNodeText}"/>
-                                   <!-- Width="175" Height="20"/>     -->
-                    </Canvas>
+                    <TextBlock Name="FilenameText" Text="{Binding strNodeText}">
+                        <TextBlock.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Explore" IsEnabled="{Binding IsFolder}"/>
+                                <MenuItem Header="Download"/>
+                            </ContextMenu>
+                        </TextBlock.ContextMenu>
+                    </TextBlock>
                 </TreeDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>

@@ -73,20 +73,22 @@ public class FileSystemAgent {
         await Console.Out.WriteLineAsync($"Finished sending {requestedPath}");
     }
 
-    public void NewIncomingTransfer(string path, Int64 size) {
+    public TransferHandle? NewIncomingTransfer(string path, Int64 size) {
         path = path.TrimStart('/'); // TODO replace '/' with a constant
         if (!downloadDir.PathContainsSubPath(path)) {
             // TODO error out, file not in download path
             Console.WriteLine("Error: path not a subpath of downloadDir in NewIncomingTransfer");
-            return;
+            return null;
         }
         var localPath = Path.Join(downloadDir, path);
+        var transfer = new Transfer(localPath, size);
 
-        ongoingTransfers.Add(path, new Transfer(localPath, size));
+        ongoingTransfers.Add(path, transfer);
         Util.TaskRunSafe(async () => {
             await ongoingTransfers[path].WriteLoop();
             // TODO remove transfer from ongoingTransfers THIS WILL MAKE IT CONCURRENT
         });
+        return new TransferHandle(transfer);
     }
 
     public void ReceiveTransferChunk(string path, byte[] chunk) {

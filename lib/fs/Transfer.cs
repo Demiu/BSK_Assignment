@@ -12,6 +12,10 @@ class Transfer : IDisposable {
     BufferBlock<byte[]> chunksToWrite;
     FileStream file;
 
+    public Int64 TotalSize => totalSize;
+    public Int64 CurrentSize => currentSize;
+    public string FilePath => file.Name;
+
     public Transfer(string path, Int64 size) {
         this.totalSize = size;
         this.currentSize = 0;
